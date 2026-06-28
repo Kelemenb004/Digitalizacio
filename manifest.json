@@ -1,0 +1,19 @@
+{
+  "name": "Digitális Hangarchívum",
+  "short_name": "Hangarchívum",
+  "description": "Digitalizált Igehirdetések gyűjteménye.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#1B2E5C",
+  "background_color": "#F5F0E8",
+  "lang": "hu",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
