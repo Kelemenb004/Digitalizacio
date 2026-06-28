@@ -377,7 +377,7 @@ function renderSeasonalRecommendations() {
   dom.seasonalGrid.appendChild(frag);
 
   state.seasonalHasContent = true;
-  // láthatóság updateSeasonalVisibility() dönti el (applyFilters hívja)
+  updateSeasonalVisibility();
 }
 
 /* ---------- Kártyakészítés ---------- */
