@@ -251,8 +251,8 @@ function applyFilters() {
 
 function isDefaultMode() {
   return (
-    !dom.searchInput?.value &&
-    !dom.igehelyFilter?.value &&
+    !(dom.searchInput?.value?.trim()) &&
+    !(dom.igehelyFilter?.value?.trim()) &&
     !dom.categoryFilter?.value &&
     !dom.speakerFilter?.value &&
     !state.showFavOnly
@@ -377,7 +377,7 @@ function renderSeasonalRecommendations() {
   dom.seasonalGrid.appendChild(frag);
 
   state.seasonalHasContent = true;
-  updateSeasonalVisibility();
+  dom.seasonalSection.classList.remove('hidden');
 }
 
 /* ---------- Kártyakészítés ---------- */
