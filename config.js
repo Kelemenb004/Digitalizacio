@@ -14,9 +14,6 @@ const CONFIG = {
   // Hány kártyát jelenítsen meg egyszerre ("Tovább" gombig)
   PAGE_SIZE: 50,
 
-  // R2 elérhetőség-ellenőrzés: false esetén az összes felvétel megjelenik ellenőrzés nélkül (azonnali betöltés)
-  CHECK_R2_AVAILABILITY: true,
-
   // Háttérkép beállítások
   BACKGROUND: {
     enabled: true,

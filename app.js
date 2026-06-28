@@ -8,14 +8,15 @@
 
 /* ---------- Állapot ---------- */
 const state = {
-  lectures:    [],       // összes felvétel (shuffle-kulccsal kiegészítve)
-  filtered:    [],       // szűrt + rendezett lista
-  page:        0,        // "load more" oldalszám
-  current:     null,     // éppen lejátszott felvétel (path alapján azonosítjuk)
-  isPlaying:   false,
-  volume:      CONFIG.DEFAULT_VOLUME,
-  showFavOnly: false,
-  favorites:   new Set(),
+  lectures:          [],       // összes felvétel (shuffle-kulccsal kiegészítve)
+  filtered:          [],       // szűrt + rendezett lista
+  page:              0,        // "load more" oldalszám
+  current:           null,     // éppen lejátszott felvétel (path alapján azonosítjuk)
+  isPlaying:         false,
+  volume:            CONFIG.DEFAULT_VOLUME,
+  showFavOnly:       false,
+  favorites:         new Set(),
+  seasonalHasContent: false,
 };
 
 /* ---------- DOM-referenciák ---------- */
@@ -61,6 +62,7 @@ function cacheDOM() {
     timeCurrent:     g('timeCurrent'),
     timeTotal:       g('timeTotal'),
     volumeSlider:    g('volumeSlider'),
+    playerShare:     g('playerShare'),
     playerClose:     g('playerClose'),
     playerError:     g('playerError'),
     themeToggle:     g('themeToggle'),
@@ -80,47 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
   loadLectures();
 });
 
-/* ---------- R2 elérhetőség-szűrő ---------- */
-async function filterByR2Availability(lectures) {
-  if (!CONFIG.CHECK_R2_AVAILABILITY) return lectures;
-
-  const CACHE_KEY = 'r2_existing_paths_v1';
-  const CACHE_TTL = 24 * 60 * 60 * 1000;
-  try {
-    const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
-    if (cached && Date.now() - cached.ts < CACHE_TTL && Array.isArray(cached.paths)) {
-      const existing = new Set(cached.paths);
-      return lectures.filter(l => existing.has(l.path));
-    }
-  } catch {}
-
-  const loadingP = dom.loadingState?.querySelector('p');
-  const existing = [];
-  const BATCH = 100;
-  for (let i = 0; i < lectures.length; i += BATCH) {
-    const batch = lectures.slice(i, i + BATCH);
-    const results = await Promise.all(batch.map(async l => {
-      try {
-        const res = await fetch(audioUrl(l.path), { method: 'HEAD' });
-        return res.ok ? l.path : null;
-      } catch { return null; }
-    }));
-    results.forEach(p => { if (p) existing.push(p); });
-    if (loadingP) {
-      loadingP.textContent = `Archívum ellenőrzése… (${Math.min(i + BATCH, lectures.length)} / ${lectures.length})`;
-    }
-  }
-
-  if (existing.length === 0) return lectures;
-
-  try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), paths: existing }));
-  } catch {}
-
-  const existingSet = new Set(existing);
-  return lectures.filter(l => existingSet.has(l.path));
-}
-
 /* ---------- Adatbetöltés ---------- */
 async function loadLectures() {
   try {
@@ -128,13 +89,13 @@ async function loadLectures() {
     if (!res.ok) throw new Error(`HTTP ${res.status} – ${res.statusText}`);
     const raw = await res.json();
 
-    const available = await filterByR2Availability(raw);
-    state.lectures = available.map(l => ({ ...l, _rand: Math.random() }));
+    state.lectures = raw.map(l => ({ ...l, _rand: Math.random() }));
 
     populateFilters();
     updateStats();
     applyFilters();
     renderSeasonalRecommendations();
+    handleUrlHash();
 
     dom.loadingState.classList.add('hidden');
   } catch (err) {
@@ -285,6 +246,26 @@ function applyFilters() {
 
   state.filtered = sortLectures(state.filtered, sortMode);
   renderLectures(state.filtered);
+  updateSeasonalVisibility();
+}
+
+function isDefaultMode() {
+  return (
+    !dom.searchInput?.value &&
+    !dom.igehelyFilter?.value &&
+    !dom.categoryFilter?.value &&
+    !dom.speakerFilter?.value &&
+    !state.showFavOnly
+  );
+}
+
+function updateSeasonalVisibility() {
+  if (!dom.seasonalSection) return;
+  if (state.seasonalHasContent && isDefaultMode()) {
+    dom.seasonalSection.classList.remove('hidden');
+  } else {
+    dom.seasonalSection.classList.add('hidden');
+  }
 }
 
 function sortLectures(arr, mode) {
@@ -377,6 +358,7 @@ function renderSeasonalRecommendations() {
   });
 
   if (matching.length === 0) {
+    state.seasonalHasContent = false;
     dom.seasonalSection.classList.add('hidden');
     return;
   }
@@ -394,7 +376,8 @@ function renderSeasonalRecommendations() {
   picks.forEach(l => frag.appendChild(createCard(l)));
   dom.seasonalGrid.appendChild(frag);
 
-  dom.seasonalSection.classList.remove('hidden');
+  state.seasonalHasContent = true;
+  // láthatóság updateSeasonalVisibility() dönti el (applyFilters hívja)
 }
 
 /* ---------- Kártyakészítés ---------- */
@@ -453,6 +436,12 @@ function createCard(lecture) {
         <button class="card-download-btn"
                 title="Letöltés: ${escHtml(lecture.cim || '')}"
                 aria-label="Letöltés: ${escHtml(lecture.cim || '')}">⬇ Letöltés</button>
+        <button class="card-share-btn"
+                title="Megosztás: ${escHtml(lecture.cim || '')}"
+                aria-label="Megosztás: ${escHtml(lecture.cim || '')}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Megosztás
+        </button>
       </div>
     </div>
   `;
@@ -461,6 +450,8 @@ function createCard(lecture) {
   article.querySelector('.card-star-btn').addEventListener('click', () => toggleFavorite(lecture.path));
   const dlBtn = article.querySelector('.card-download-btn');
   dlBtn.addEventListener('click', () => downloadLecture(lecture, dlBtn));
+  const shareBtn = article.querySelector('.card-share-btn');
+  shareBtn.addEventListener('click', () => shareLecture(lecture, shareBtn));
   return article;
 }
 
@@ -510,6 +501,7 @@ function startPlaying(lecture) {
     showPlayerError('A felvétel nem érhető el. Ellenőrizd az R2 URL-t a config.js-ben.');
   });
 
+  history.replaceState(null, '', '#felvetel=' + encodeURIComponent(lecture.path));
   updateCardStates();
 }
 
@@ -532,6 +524,7 @@ function stopPlayer() {
   updateProgressBarStyle(0);
   dom.timeCurrent.textContent  = '0:00';
   dom.timeTotal.textContent    = '0:00';
+  history.replaceState(null, '', location.pathname + location.search);
   updateCardStates();
 }
 
@@ -630,6 +623,12 @@ function setupEventListeners() {
   });
 
   dom.playerClose.addEventListener('click', stopPlayer);
+
+  if (dom.playerShare) {
+    dom.playerShare.addEventListener('click', () => {
+      if (state.current) shareLecture(state.current, dom.playerShare);
+    });
+  }
 
   dom.progressBar.addEventListener('input', () => {
     if (!dom.audio.duration) return;
@@ -790,6 +789,45 @@ function setFavToggleIcon(star) {
   if (!dom.favToggle) return;
   const starEl = dom.favToggle.querySelector('.fav-star');
   if (starEl) starEl.textContent = star;
+}
+
+function handleUrlHash() {
+  const hash = window.location.hash;
+  if (!hash.startsWith('#felvetel=')) return;
+  try {
+    const path = decodeURIComponent(hash.slice('#felvetel='.length));
+    const lecture = state.lectures.find(l => l.path === path);
+    if (!lecture) return;
+    startPlaying(lecture);
+    const card = findCard(lecture.path);
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } catch {}
+}
+
+async function shareLecture(lecture, btn) {
+  const shareUrl = location.origin + location.pathname + '#felvetel=' + encodeURIComponent(lecture.path);
+  const title = lecture.cim || 'Igehirdetés';
+  const text = [lecture.eloado, lecture.datum].filter(Boolean).join(' – ');
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title, text: text + '\n' + title, url: shareUrl });
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+    }
+  }
+
+  const origHtml = btn ? btn.innerHTML : null;
+  try {
+    await navigator.clipboard.writeText(shareUrl);
+    if (btn) {
+      btn.innerHTML = '✓ Másolva!';
+      setTimeout(() => { btn.innerHTML = origHtml; }, 2000);
+    }
+  } catch {
+    prompt('Másold ki a linket:', shareUrl);
+  }
 }
 
 function updateProgressBarStyle(pct) {

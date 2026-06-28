@@ -440,9 +440,10 @@ html:not([data-theme="dark"]) .icon-moon { display: block; }
 
 .card-footer {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.625rem 0.75rem;
   margin-top: 0.25rem;
   padding-top: 0.75rem;
   border-top: 1px solid var(--border-light);
@@ -1049,10 +1050,6 @@ input[type="range"]#volumeSlider:focus {
   align-items: center;
   gap: 0.5rem;
 }
-.seasonal-title::before {
-  content: '📅';
-  font-size: 1rem;
-}
 
 [data-theme="dark"] .seasonal-title { color: var(--gold-light); }
 
@@ -1142,11 +1139,13 @@ input[type="range"]#volumeSlider:focus {
 [data-theme="dark"] .kat-imaheti         { background: rgba(45,21,6,0.6);    color: #D49060; }
 [data-theme="dark"] .kat-alap            { background: rgba(27,46,92,0.6);   color: #90B0E0; }
 
-/* --- Kártya akciók (lejátszás + letöltés + kedvenc) --- */
+/* --- Kártya akciók (lejátszás + letöltés + megosztás + kedvenc) --- */
 .card-actions {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 /* Letöltés gomb */
@@ -1184,6 +1183,48 @@ input[type="range"]#volumeSlider:focus {
   background: rgba(255,255,255,0.1);
   color: var(--gold-light);
   border-color: var(--gold);
+}
+
+/* Megosztás gomb */
+.card-share-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: var(--navy);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+  flex-shrink: 0;
+}
+.card-share-btn:hover {
+  background: var(--gold-pale);
+  color: var(--navy-dark);
+  border-color: var(--gold);
+}
+[data-theme="dark"] .card-share-btn {
+  color: var(--text);
+  border-color: rgba(255,255,255,0.2);
+}
+[data-theme="dark"] .card-share-btn:hover {
+  background: rgba(201,164,74,0.1);
+  color: var(--gold-light);
+  border-color: var(--gold);
+}
+
+/* Player megosztás gomb */
+.player-share-btn {
+  color: rgba(255,255,255,0.65);
+}
+.player-share-btn:hover {
+  color: var(--gold-light);
+  background: rgba(255,255,255,0.1);
 }
 
 /* Kedvenc (csillag) gomb */
