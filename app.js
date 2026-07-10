@@ -368,8 +368,7 @@ function renderSeasonalRecommendations() {
   const shuffled = [...matching].sort(() => Math.random() - 0.5);
   const picks = shuffled.slice(0, count);
 
-  const honapNev = HONAPOK[month];
-  dom.seasonalTitle.textContent = `${honapNev.charAt(0).toUpperCase() + honapNev.slice(1)} igehirdetések az archívumból`;
+  dom.seasonalTitle.textContent = 'Napi ajánló';
 
   dom.seasonalGrid.innerHTML = '';
   const frag = document.createDocumentFragment();
@@ -401,10 +400,20 @@ function createCard(lecture) {
   const url    = audioUrl(lecture.path);
   const dlName = downloadFilename(lecture);
 
+  const lectioLink = igehelyToSzentiras(lecture.lectio);
   const lectioHtml     = lecture.lectio
-    ? `<p class="card-igehely"><span class="igehely-label">Lectió:</span> ${escHtml(lecture.lectio)}</p>` : '';
+    ? `<p class="card-igehely"><span class="igehely-label">Lectió:</span> ${
+        lectioLink
+          ? `<a class="igehely-link" href="${lectioLink}" target="_blank" rel="noopener" title="Megnyitás a szentiras.eu-n">${escHtml(lecture.lectio)}</a>`
+          : escHtml(lecture.lectio)
+      }</p>` : '';
+  const textusLink = igehelyToSzentiras(lecture.textus);
   const textusHtml     = lecture.textus
-    ? `<p class="card-igehely"><span class="igehely-label">Textus:</span> ${escHtml(lecture.textus)}</p>` : '';
+    ? `<p class="card-igehely"><span class="igehely-label">Textus:</span> ${
+        textusLink
+          ? `<a class="igehely-link" href="${textusLink}" target="_blank" rel="noopener" title="Megnyitás a szentiras.eu-n">${escHtml(lecture.textus)}</a>`
+          : escHtml(lecture.textus)
+      }</p>` : '';
   const megjegyzesHtml = lecture.megjegyzes
     ? `<p class="card-megjegyzes">📌 ${escHtml(lecture.megjegyzes)}</p>` : '';
   const specialBadge   = isSpecial
@@ -422,7 +431,6 @@ function createCard(lecture) {
     <div class="card-footer">
       <div class="card-meta">
         ${dateStr ? `<span class="card-date">${escHtml(dateStr)}</span>` : ''}
-        ${lecture.evkor ? `<span class="card-evkor">${escHtml(lecture.evkor)}</span>` : ''}
       </div>
       <div class="card-actions">
         <button class="card-star-btn${isFav ? ' is-favorite' : ''}"
@@ -778,6 +786,75 @@ function escHtml(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+const BIBLIAI_KONYVEK = {
+  '1mozes':'1Móz','2mozes':'2Móz','3mozes':'3Móz','4mozes':'4Móz','5mozes':'5Móz',
+  '1moz':'1Móz','2moz':'2Móz','3moz':'3Móz','4moz':'4Móz','5moz':'5Móz',
+  'jozsue':'Józs','jozs':'Józs','birak':'Bír','bir':'Bír','ruth':'Ruth','rut':'Ruth',
+  '1samuel':'1Sám','2samuel':'2Sám','1sam':'1Sám','2sam':'2Sám','sam':'1Sám','samson':'Bír',
+  '1kiralyok':'1Kir','2kiralyok':'2Kir','1kir':'1Kir','2kir':'2Kir','kir':'1Kir',
+  '1kronikak':'1Krón','2kronikak':'2Krón','1kron':'1Krón','2kron':'2Krón','kro':'1Krón',
+  'ezsdras':'Ezsd','nehemias':'Neh','neh':'Neh','eszter':'Eszt','job':'Jób',
+  'zsoltarok':'Zsolt','zsoltar':'Zsolt','zsolt':'Zsolt','zsol':'Zsolt','zsoltrarok':'Zsolt',
+  'peldabeszedek':'Péld','peld':'Péld','predikator':'Préd','enekek':'Énekek',
+  'ezsaias':'Ézs','ezs':'Ézs','ezsias':'Ézs','ezsiias':'Ézs','izaias':'Ézs',
+  'jeremias':'Jer','jer':'Jer',
+  'ezekiel':'Ez','ez':'Ez','daniel':'Dán','dan':'Dán',
+  'hoseas':'Hós','hoseias':'Hós','hosias':'Hós','hos':'Hós',
+  'joel':'Jóel','amos':'Ám','abdias':'Abd','jonas':'Jón','jon':'Jón',
+  'mikeas':'Mik','mik':'Mik','nahum':'Náh','habakuk':'Hab','sofonias':'Zof',
+  'aggeus':'Hag','agg':'Hag','hag':'Hag','zakarias':'Zak','zak':'Zak','malakias':'Mal',
+  'mate':'Mt','mt':'Mt','mark':'Mk','mk':'Mk','lukacs':'Lk','luk':'Lk','lk':'Lk',
+  'janos':'Jn','jano':'Jn','jn':'Jn',
+  'apostolokcselekedetei':'ApCsel','apostolok':'ApCsel','apcsel':'ApCsel','ap':'ApCsel','apcse':'ApCsel',
+  'roma':'Róm','romaiak':'Róm','rom':'Róm','rm':'Róm',
+  '1korintus':'1Kor','2korintus':'2Kor','1korinthus':'1Kor','2korinthus':'2Kor',
+  '1kor':'1Kor','2kor':'2Kor','kor':'1Kor',
+  'galata':'Gal','galatak':'Gal','gal':'Gal',
+  'efezus':'Ef','efezusiak':'Ef','ef':'Ef',
+  'filippi':'Fil','fil':'Fil','fk':'Fil','kolosse':'Kol','kol':'Kol',
+  '1thesszalonika':'1Thessz','2thesszalonika':'2Thessz','1thess':'1Thessz','2thess':'2Thessz','thess':'1Thessz','thessalonika':'1Thessz',
+  '1timoteus':'1Tim','2timoteus':'2Tim','1tim':'1Tim','2tim':'2Tim','tim':'1Tim',
+  'titus':'Tit','titusz':'Tit','tit':'Tit','filemon':'Filem',
+  'zsidok':'Zsid','zsido':'Zsid','zsid':'Zsid','zsd':'Zsid',
+  'jakab':'Jak','jak':'Jak','jk':'Jak',
+  '1peter':'1Pt','2peter':'2Pt','peter':'1Pt','pt':'1Pt',
+  '1janos':'1Jn','2janos':'2Jn','3janos':'3Jn',
+  'judas':'Júd','jud':'Júd','jelenesek':'Jel','jel':'Jel',
+};
+
+function igehelyToSzentiras(raw) {
+  if (!raw) return null;
+  try {
+    let s = String(raw).trim();
+    s = s.replace(/^(lecti[oó]|textus|lextus)\s*:?\s*/i, '').trim();
+    s = s.split(/\s+(?:lecti[oó]|textus)\s*:/i)[0].trim();
+    s = s.replace(/\bev\.?\s*/i, '');
+    const zsoltM = s.match(/^(\d+)\.\s*(zsolt[a-záéó]*)\s*(.*)$/i);
+    if (zsoltM) {
+      const fej = zsoltM[1], mar = zsoltM[3].trim().replace(/\s+/g, '').replace(/[-–,;.\s]+$/, '').replace(/:/g, ',');
+      const zsoltUtvonal = mar ? `Zsolt${fej},${mar}` : `Zsolt${fej}`;
+      return 'https://szentiras.eu/RUF/' + encodeURIComponent(zsoltUtvonal);
+    }
+    let norm = s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const rom = { v:'5', iv:'4', iii:'3', ii:'2', i:'1' };
+    const rm = norm.match(/^(iv|iii|ii|i|v)[.,:]?\s*([a-z])/);
+    if (rm) norm = rom[rm[1]] + norm.slice(rm.index + rm[1].length).replace(/^[.,:\s]+/, '');
+    const m = norm.match(/^(\d?\s*[a-z][a-z.\s]*?)\.?\s*[:\s]?\s*(\d.*)?$/);
+    if (!m) return null;
+    const konyvNorm = m[1].replace(/[.\s:,]/g, '');
+    let hiv = (m[2] || '').trim().replace(/^:/, '').trim();
+    const rov = BIBLIAI_KONYVEK[konyvNorm];
+    if (!rov) return null;
+    hiv = hiv.replace(/\s+/g, '');
+    // Csonka végződések levágása: záró kötőjel, vessző, pont, pontosvessző szám nélkül
+    hiv = hiv.replace(/[-–,;.\s]+$/, '');
+    // hiv: a fejezet:vers rész, pl. "3:16" vagy "4:1-6" -> a kettőspontot vesszőre cseréljük
+    const hivVesszo = hiv.replace(/:/g, ',');
+    const utvonal = hivVesszo ? `${rov}${hivVesszo}` : rov;
+    return 'https://szentiras.eu/RUF/' + encodeURIComponent(utvonal);
+  } catch { return null; }
 }
 
 function debounce(fn, ms) {

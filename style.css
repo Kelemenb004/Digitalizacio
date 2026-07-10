@@ -1074,6 +1074,8 @@ input[type="range"]#volumeSlider:focus {
   margin-right: 0.25rem;
 }
 [data-theme="dark"] .igehely-label { color: var(--gold-light); }
+.igehely-link { color: var(--gold); text-decoration: none; border-bottom: 1px dotted var(--gold); transition: border-bottom-style .15s; }
+.igehely-link:hover, .igehely-link:focus { border-bottom-style: solid; }
 
 /* Megjegyzés sor */
 .card-megjegyzes {
