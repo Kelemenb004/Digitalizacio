@@ -95,22 +95,10 @@
     <div class="header-inner">
 
       <div class="header-brand">
-        <svg class="header-icon" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <rect width="96" height="96" rx="18" fill="#0F1D3A"/>
-          <rect x="16" y="38" width="64" height="42" rx="4" fill="#C9A44A" opacity="0.15" stroke="#C9A44A" stroke-width="2"/>
-          <rect x="12" y="30" width="72" height="11" rx="3" fill="#C9A44A"/>
-          <circle cx="30" cy="62" r="7" fill="none" stroke="#C9A44A" stroke-width="2" opacity="0.8"/>
-          <circle cx="30" cy="62" r="2.5" fill="#C9A44A" opacity="0.8"/>
-          <circle cx="66" cy="62" r="7" fill="none" stroke="#C9A44A" stroke-width="2" opacity="0.8"/>
-          <circle cx="66" cy="62" r="2.5" fill="#C9A44A" opacity="0.8"/>
-          <line x1="37" y1="62" x2="59" y2="62" stroke="#C9A44A" stroke-width="1.5" opacity="0.5"/>
-          <path d="M36 50 Q48 44 60 50" stroke="#C9A44A" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
-          <path d="M30 46 Q48 38 66 46" stroke="#C9A44A" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
-        </svg>
-
+        <img class="header-logo" src="images/logo.png" alt="Kelenföldi Református Egyházközség">
         <div class="header-titles">
           <h1>Digitális Hangarchívum</h1>
-          <p class="header-subtitle">Digitalizált Igehirdetések gyűjteménye</p>
+          <p class="header-subtitle">Kelenföldi Református Egyházközség</p>
         </div>
       </div>
 
@@ -124,6 +112,12 @@
 
       <button class="random-btn" id="randomBtn" title="Véletlen igehirdetés lejátszása" aria-label="Véletlen igehirdetés">
         🎲 <span class="random-btn-text">Véletlen</span>
+      </button>
+
+      <button class="filters-toggle" id="filtersToggle" aria-label="Szűrők" aria-expanded="false" title="Szűrők">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" width="20" height="20">
+          <line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/>
+        </svg>
       </button>
 
       <button class="theme-toggle" id="themeToggle" aria-label="Sötét mód" title="Témaváltás">
@@ -142,47 +136,59 @@
     </div>
   </header>
 
-  <!-- ===== Szűrősáv ===== -->
-  <nav class="filters-bar" aria-label="Szűrők">
-    <div class="filters-inner">
-      <span class="filters-label">Szűrés:</span>
+  <!-- ===== Hero nyitókép ===== -->
+  <section class="hero" aria-label="Bevezető">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <blockquote class="hero-quote">„Hű az Isten, ki elhívott titeket az ő Fiával, a mi Urunk Jézus Krisztussal való közösségre."</blockquote>
+      <cite class="hero-cite">1 Korinthus 1,9</cite>
+    </div>
+  </section>
 
-      <label for="categoryFilter" class="sr-only">Kategória</label>
-      <select id="categoryFilter" aria-label="Kategória szűrő">
-        <option value="">Minden kategória</option>
-      </select>
-
-      <label for="speakerFilter" class="sr-only">Előadó</label>
-      <select id="speakerFilter" aria-label="Előadó szűrő">
-        <option value="">Minden előadó</option>
-      </select>
-
-      <label for="igehelyFilter" class="sr-only">Igehely keresés</label>
-      <input type="search" id="igehelyFilter"
-             placeholder="Igehely (pl. János 3, Zsoltár)…"
-             autocomplete="off" spellcheck="false"
-             class="igehely-input" aria-label="Igehely keresés">
-
-      <label for="sortSelect" class="sr-only">Rendezés</label>
-      <select id="sortSelect" aria-label="Rendezési sorrend">
-        <option value="random">Véletlenszerű</option>
-        <option value="date-desc">Dátum (újabb elől)</option>
-        <option value="date-asc">Dátum (régebbi elől)</option>
-        <option value="speaker">Előadó A–Z</option>
-        <option value="duration">Hossz szerint</option>
-      </select>
-
-      <button class="fav-toggle" id="favToggle" type="button" aria-pressed="false" title="Csak kedvencek megjelenítése">
-        <span class="fav-star">☆</span><span class="fav-text"> Kedvenceim</span>
-      </button>
-
-      <button class="filter-reset" id="filterReset" type="button">Törlés</button>
-
-      <div class="results-count" aria-live="polite" aria-atomic="true">
-        <strong id="resultsCount">–</strong> felvétel
+  <!-- ===== Szűrőpanel ===== -->
+  <nav class="filters-panel" id="filtersPanel" aria-label="Szűrők" hidden>
+    <div class="filters-panel-inner">
+      <div class="filters-panel-header">
+        <span class="filters-panel-title">Szűrők és rendezés</span>
+        <button class="filters-panel-close" id="filtersPanelClose" aria-label="Bezárás">✕</button>
+      </div>
+      <div class="filters-panel-body">
+        <label class="filter-field">
+          <span class="filter-field-label">Kategória</span>
+          <select id="categoryFilter" aria-label="Kategória szűrő"><option value="">Minden kategória</option></select>
+        </label>
+        <label class="filter-field">
+          <span class="filter-field-label">Előadó</span>
+          <select id="speakerFilter" aria-label="Előadó szűrő"><option value="">Minden előadó</option></select>
+        </label>
+        <label class="filter-field">
+          <span class="filter-field-label">Igehely</span>
+          <input type="search" id="igehelyFilter" placeholder="pl. János 3, Zsoltár…" autocomplete="off" spellcheck="false" class="igehely-input" aria-label="Igehely keresés">
+        </label>
+        <label class="filter-field">
+          <span class="filter-field-label">Rendezés</span>
+          <select id="sortSelect" aria-label="Rendezési sorrend">
+            <option value="random">Véletlenszerű</option>
+            <option value="date-desc">Dátum (újabb elől)</option>
+            <option value="date-asc">Dátum (régebbi elől)</option>
+            <option value="speaker">Előadó A–Z</option>
+            <option value="duration">Hossz szerint</option>
+          </select>
+        </label>
+      </div>
+      <div class="filters-panel-footer">
+        <button class="fav-toggle" id="favToggle" type="button" aria-pressed="false" title="Csak kedvencek megjelenítése">
+          <span class="fav-star">☆</span><span class="fav-text"> Kedvenceim</span>
+        </button>
+        <button class="filter-reset" id="filterReset" type="button">Törlés</button>
+        <div class="results-count" aria-live="polite" aria-atomic="true">
+          <strong id="resultsCount">–</strong> felvétel
+        </div>
+        <button class="filters-panel-done" id="filtersPanelDone" type="button">Kész</button>
       </div>
     </div>
   </nav>
+  <div class="filters-backdrop" id="filtersBackdrop" hidden></div>
 
   <!-- ===== Statisztikasáv ===== -->
   <section class="stats-bar" aria-label="Archívum statisztika">

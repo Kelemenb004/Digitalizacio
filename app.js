@@ -691,6 +691,30 @@ function setupEventListeners() {
 
   if (dom.loadMoreBtn) dom.loadMoreBtn.addEventListener('click', loadMoreLectures);
 
+  const filtersToggle = document.getElementById('filtersToggle');
+  const filtersPanel = document.getElementById('filtersPanel');
+  const filtersBackdrop = document.getElementById('filtersBackdrop');
+  const filtersPanelClose = document.getElementById('filtersPanelClose');
+  const filtersPanelDone = document.getElementById('filtersPanelDone');
+
+  function openFilters() {
+    filtersPanel.hidden = false;
+    filtersBackdrop.hidden = false;
+    filtersToggle.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeFilters() {
+    filtersPanel.hidden = true;
+    filtersBackdrop.hidden = true;
+    filtersToggle.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+  if (filtersToggle) filtersToggle.addEventListener('click', openFilters);
+  if (filtersPanelClose) filtersPanelClose.addEventListener('click', closeFilters);
+  if (filtersPanelDone) filtersPanelDone.addEventListener('click', closeFilters);
+  if (filtersBackdrop) filtersBackdrop.addEventListener('click', closeFilters);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !filtersPanel.hidden) closeFilters(); });
+
   document.addEventListener('keydown', handleKeyboard);
 }
 
