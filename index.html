@@ -66,7 +66,9 @@
   <title>Kelenföldi Református Igehirdetések – Digitális Hangarchívum | kelenref100</title>
 
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon-32x32.png" sizes="32x32" type="image/png">
+  <link rel="icon" href="favicon-16x16.png" sizes="16x16" type="image/png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -95,7 +97,7 @@
     <div class="header-inner">
 
       <div class="header-brand">
-        <img class="header-logo" src="images/logo.png" alt="Kelenföldi Református Egyházközség">
+        <img class="header-logo" id="homeLogo" src="images/logo.png" alt="Kelenföldi Református Egyházközség – Főoldal" title="Vissza a főoldalra" role="button" tabindex="0" style="cursor:pointer;">
         <div class="header-titles">
           <h1>Digitális Hangarchívum</h1>
           <p class="header-subtitle">Kelenföldi Református Egyházközség</p>
@@ -140,8 +142,11 @@
   <section class="hero" aria-label="Bevezető">
     <div class="hero-overlay"></div>
     <div class="hero-content">
-      <blockquote class="hero-quote">„Hű az Isten, ki elhívott titeket az ő Fiával, a mi Urunk Jézus Krisztussal való közösségre."</blockquote>
-      <cite class="hero-cite">1 Korinthus 1,9</cite>
+      <img class="hero-logo" src="images/pecset-logo-transparent.png" alt="Kelenföldi Reformátusok – 100 éve Krisztussal jubileumi pecsét" width="150" height="150">
+      <div class="hero-text">
+        <blockquote class="hero-quote">„Hű az Isten, ki elhívott titeket az ő Fiával, a mi Urunk Jézus Krisztussal való közösségre."</blockquote>
+        <cite class="hero-cite"><a href="https://szentiras.eu/RUF/1Kor1,9" target="_blank" rel="noopener" class="hero-cite-link">1 Korinthus 1,9</a></cite>
+      </div>
     </div>
   </section>
 
@@ -266,8 +271,22 @@
 
   <!-- ===== Lábléc ===== -->
   <footer class="site-footer" role="contentinfo">
-    <span class="footer-brand">A Budapest - Kelenföldi Református Egyházközség Digitalizált Hangarchivuma</span>
-    <p class="footer-note">Kelemen Botond 2026</p>
+    <div class="footer-inner">
+      <div class="footer-main">
+        <p class="footer-brand">Digitális Hangarchívum</p>
+        <p class="footer-copyright">A hanganyagok a Budapest-Kelenföldi Református Egyházközség tulajdonát képezik.</p>
+        <p class="footer-copyright">© 2026 Kelemen Botond – Minden jog fenntartva.</p>
+      </div>
+      <div class="footer-meta">
+        <p class="footer-impressum">
+          <span class="footer-impressum-label">Fejlesztés és üzemeltetés:</span> Kelemen Botond
+        </p>
+        <p class="footer-contact">
+          Hibát találtál, vagy van egy ötleted?
+          <a href="mailto:kelemen.botond04@gmail.com?subject=Hangarch%C3%ADvum%20visszajelz%C3%A9s" class="footer-email">Írj nekem!</a>
+        </p>
+      </div>
+    </div>
   </footer>
 
   <!-- ===== Audio lejátszó (alul rögzített) ===== -->

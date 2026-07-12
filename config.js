@@ -11,7 +11,10 @@ const CONFIG = {
   // Alapértelmezett hangerő (0–1)
   DEFAULT_VOLUME: 0.85,
 
-  // Hány kártyát jelenítsen meg egyszerre ("Tovább" gombig)
+  // Hány kártyát jelenítsen meg ELSŐRE (első betöltéskor)
+  INITIAL_PAGE_SIZE: 18,
+
+  // Hány további kártyát töltsön be a "Tovább" gomb minden kattintásra
   PAGE_SIZE: 50,
 
   // Háttérkép beállítások

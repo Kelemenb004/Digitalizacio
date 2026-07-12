@@ -79,6 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
   restoreSpeed();
   setupEventListeners();
   initBackground();
+  initHeroBackground();
   loadLectures();
 });
 
@@ -103,6 +104,29 @@ async function loadLectures() {
     dom.errorState.classList.remove('hidden');
     dom.errorMsg.textContent = `Nem sikerült betölteni az archívumot: ${err.message}`;
   }
+}
+
+/* ---------- Hero háttérkép – véletlenszerű választás ---------- */
+const HERO_BACKGROUNDS = [
+  'images/hero-kazetta.jpg',
+  'images/296bbcb1-66d6-4a46-b1aa-0592a334b87c.jpg',
+  'images/2b4a6b5b-53a9-45f3-b229-f348044ae02a.jpg',
+  'images/6acb67bc-a5c1-4b85-9e49-481b9143d5e1.jpg',
+  'images/hero-1.jpg',
+  'images/hero-2.jpg',
+  'images/hero-3.jpg',
+  'images/hero-4.jpg',
+];
+
+function initHeroBackground() {
+  const hero = document.querySelector('.hero');
+  if (!hero) return;
+  const src = HERO_BACKGROUNDS[Math.floor(Math.random() * HERO_BACKGROUNDS.length)];
+  // Előtöltjük, hogy ne villanjon
+  const img = new Image();
+  img.onload = () => { hero.style.backgroundImage = `url('${src}')`; };
+  img.onerror = () => { hero.style.backgroundImage = "url('images/hero-kazetta.jpg')"; }; // fallback
+  img.src = src;
 }
 
 /* ---------- Háttérkép – "függöny mögötti" hatás ---------- */
@@ -203,6 +227,57 @@ function appendOptions(select, values) {
   });
 }
 
+/* ---------- Egymásra épülő (dependent) szűrők ---------- */
+function refreshFilterOptions() {
+  const selCat = dom.categoryFilter?.value || '';
+  const selSpeaker = dom.speakerFilter?.value || '';
+
+  // A kategória-lista azon felvételek alapján, amik az AKTUÁLIS előadó-szűrésnek megfelelnek
+  // (de a kategória-szűrést figyelmen kívül hagyva, hogy a saját opcióit ne szűkítse önmagára)
+  const catPool = state.lectures.filter(l => {
+    if (selSpeaker && l.eloado !== selSpeaker) return false;
+    return true;
+  });
+  const kategoriak = [...new Set(catPool.map(l => l.kategoria).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, 'hu'));
+
+  // Az előadó-lista azon felvételek alapján, amik az AKTUÁLIS kategória-szűrésnek megfelelnek
+  const speakerPool = state.lectures.filter(l => {
+    if (selCat && l.kategoria !== selCat) return false;
+    return true;
+  });
+  const eloadok = [...new Set(speakerPool.map(l => l.eloado).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, 'hu'));
+
+  // Újratöltjük a kategória legördülőt (megőrizve a kiválasztott értéket ha még érvényes)
+  rebuildSelect(dom.categoryFilter, kategoriak, selCat, 'Minden kategória');
+  // Újratöltjük az előadó legördülőt
+  rebuildSelect(dom.speakerFilter, eloadok, selSpeaker, 'Minden előadó');
+}
+
+function rebuildSelect(select, values, currentValue, allLabel) {
+  if (!select) return;
+  select.innerHTML = '';
+  const allOpt = document.createElement('option');
+  allOpt.value = '';
+  allOpt.textContent = allLabel;
+  select.appendChild(allOpt);
+
+  values.forEach(val => {
+    const opt = document.createElement('option');
+    opt.value = val;
+    opt.textContent = val;
+    select.appendChild(opt);
+  });
+
+  // Ha a korábban kiválasztott érték még létezik, tartsuk meg; különben visszaáll "minden"-re
+  if (currentValue && values.includes(currentValue)) {
+    select.value = currentValue;
+  } else {
+    select.value = '';
+  }
+}
+
 /* ---------- Statisztika ---------- */
 function updateStats() {
   const totalSec   = state.lectures.reduce((s, l) => s + (l.hossz_sec || 0), 0);
@@ -292,6 +367,7 @@ function resetFilters() {
     setFavToggleIcon('☆');
   }
 
+  refreshFilterOptions();
   applyFilters();
 }
 
@@ -307,7 +383,7 @@ function renderLectures(lectures) {
   }
   dom.emptyState.classList.add('hidden');
 
-  const slice = lectures.slice(0, CONFIG.PAGE_SIZE);
+  const slice = lectures.slice(0, CONFIG.INITIAL_PAGE_SIZE);
   const frag = document.createDocumentFragment();
   slice.forEach(l => frag.appendChild(createCard(l)));
   dom.grid.appendChild(frag);
@@ -328,15 +404,14 @@ function updateLoadMoreBtn(total, shown) {
 }
 
 function loadMoreLectures() {
-  state.page++;
-  const start = state.page * CONFIG.PAGE_SIZE;
-  const slice = state.filtered.slice(start, start + CONFIG.PAGE_SIZE);
+  const currentlyShown = dom.grid.children.length;
+  const slice = state.filtered.slice(currentlyShown, currentlyShown + CONFIG.PAGE_SIZE);
 
   const frag = document.createDocumentFragment();
   slice.forEach(l => frag.appendChild(createCard(l)));
   dom.grid.appendChild(frag);
 
-  const totalShown = start + slice.length;
+  const totalShown = currentlyShown + slice.length;
   updateLoadMoreBtn(state.filtered.length, totalShown);
 }
 
@@ -505,8 +580,11 @@ function startPlaying(lecture) {
   dom.player.classList.remove('hidden');
 
   dom.audio.play().catch(err => {
+    // Az AbortError ártalmatlan: akkor jön, ha egy új lejátszás megszakítja az előzőt
+    // (pl. gyors váltás felvételek között, vagy a böngésző még tölt). Ilyenkor NINCS valódi hiba.
+    if (err.name === 'AbortError') return;
     console.warn('Lejátszási hiba:', err.message);
-    showPlayerError('A felvétel nem érhető el. Ellenőrizd az R2 URL-t a config.js-ben.');
+    showPlayerError('A felvétel most nem indítható el. Próbáld meg újra.');
   });
 
   history.replaceState(null, '', '#felvetel=' + encodeURIComponent(lecture.path));
@@ -585,6 +663,10 @@ function setupAudioListeners() {
     clearPlayerError();
   });
 
+  dom.audio.addEventListener('playing', () => {
+    clearPlayerError();
+  });
+
   dom.audio.addEventListener('pause', () => {
     state.isPlaying = false;
     updateCardStates();
@@ -610,8 +692,9 @@ function setupAudioListeners() {
   });
 
   dom.audio.addEventListener('error', () => {
-    if (dom.audio.src && dom.audio.src !== window.location.href) {
-      showPlayerError('A hangfájl nem tölthető be. Ellenőrizd az R2 URL-t a config.js-ben.');
+    // Csak akkor jelezzünk, ha tényleg van forrás és az nem tölthető be
+    if (dom.audio.src && dom.audio.src !== window.location.href && dom.audio.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+      showPlayerError('A hangfájl most nem tölthető be. Ellenőrizd az internetkapcsolatot, vagy próbáld később.');
     }
   });
 }
@@ -662,6 +745,18 @@ function setupEventListeners() {
 
   if (dom.themeToggle) dom.themeToggle.addEventListener('click', toggleTheme);
 
+  const homeLogo = document.getElementById('homeLogo');
+  function goHome() {
+    resetFilters();                                   // minden szűrő + keresés törlése (a fav-nézetet is)
+    window.scrollTo({ top: 0, behavior: 'smooth' });  // görgetés a lap tetejére
+  }
+  if (homeLogo) {
+    homeLogo.addEventListener('click', goHome);
+    homeLogo.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goHome(); }
+    });
+  }
+
   if (dom.randomBtn) dom.randomBtn.addEventListener('click', playRandomLecture);
 
   dom.searchInput.addEventListener('input', debounce(applyFilters, 250));
@@ -673,8 +768,8 @@ function setupEventListeners() {
     dom.igehelyFilter.addEventListener('keydown', e => { if (e.key === 'Enter') applyFilters(); });
   }
 
-  dom.categoryFilter.addEventListener('change', applyFilters);
-  dom.speakerFilter.addEventListener('change', applyFilters);
+  dom.categoryFilter.addEventListener('change', () => { refreshFilterOptions(); applyFilters(); });
+  dom.speakerFilter.addEventListener('change', () => { refreshFilterOptions(); applyFilters(); });
   if (dom.sortSelect) dom.sortSelect.addEventListener('change', applyFilters);
 
   if (dom.favToggle) {

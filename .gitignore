@@ -1,2 +1,17 @@
+# Fejlesztői környezet
 .vscode/
 _forrasok/
+
+# Python segéd-scriptek (nem az oldal része)
+*.py
+
+# Nagy, tömörítetlen eredeti képek (a tömörített hero-*.jpg verziók vannak használatban)
+images/IMG_20230530_001053.jpg
+images/IMG_20230530_002808.jpg
+images/IMG_20230617_195710.jpg
+images/IMG_20231130_123745.jpg
+images/hatterkep og picture.JPG
+
+# Nem használt fájlok
+images/pecset-logo.png
+images/IMG-d35c9968e856b7312d58b409f794cd4a-V.jpg
