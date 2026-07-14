@@ -116,6 +116,7 @@ const HERO_BACKGROUNDS = [
   'images/hero-2.jpg',
   'images/hero-3.jpg',
   'images/hero-4.jpg',
+  'images/a9b90fc1-820a-418e-ad18-3ea2c8ad491e.jpg',
 ];
 
 function initHeroBackground() {
