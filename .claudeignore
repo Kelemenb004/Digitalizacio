@@ -1,0 +1,20 @@
+# Obsidian saját konfigja – ne kerüljön a Claude kontextusába
+.obsidian/
+
+# Verziókezelés, build, függőségek
+.git/
+node_modules/
+dist/
+build/
+
+# Generált tömeges kimenet – ha van külön mappa a generált előadói oldalaknak,
+# és nem akarod, hogy a Claude alapból beolvassa őket, told ide.
+# Példa (igazítsd a valós mappához):
+# generated/
+# speakers/*.html
+
+# Nagy / bináris fájlok (az audio úgyis R2-n van, de biztos, ami biztos)
+*.mp3
+*.wav
+*.zip
+*.log
