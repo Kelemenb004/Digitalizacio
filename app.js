@@ -502,7 +502,11 @@ function createCard(lecture) {
       <span class="card-duration">${escHtml(duration)}</span>
     </div>
     <h2 class="card-title">${escHtml(lecture.cim || lecture.eloado || '—')}</h2>
-    <p class="card-speaker">${escHtml(lecture.eloado || 'Ismeretlen előadó')}</p>
+    <p class="card-speaker">${
+      lecture.eloado
+        ? `<a class="card-speaker-link" href="/igehirdeto/${slugify(lecture.eloado)}/" title="${escHtml(lecture.eloado)} összes igehirdetése">${escHtml(lecture.eloado)}</a>`
+        : 'Ismeretlen előadó'
+    }</p>
     ${lectioHtml}${textusHtml}${megjegyzesHtml}
     <div class="card-footer">
       <div class="card-meta">
@@ -906,6 +910,18 @@ function escHtml(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+function slugify(s) {
+  return (s || '')
+    .trim().toLowerCase()
+    .replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i')
+    .replace(/ó/g,'o').replace(/ö/g,'o').replace(/ő/g,'o')
+    .replace(/ú/g,'u').replace(/ü/g,'u').replace(/ű/g,'u')
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[^a-z0-9]+/g,'-')
+    .replace(/-+/g,'-')
+    .replace(/^-+|-+$/g,'');
 }
 
 const BIBLIAI_KONYVEK = {
