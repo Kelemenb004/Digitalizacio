@@ -4,6 +4,7 @@ _forrasok/
 
 # Python segéd-scriptek (nem az oldal része)
 *.py
+!igehirdeto_generator.py
 
 # Nagy, tömörítetlen eredeti képek (a tömörített hero-*.jpg verziók vannak használatban)
 images/IMG_20230530_001053.jpg

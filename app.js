@@ -991,6 +991,7 @@ function igehelySzakaszok(raw) {
   s = s.replace(/^(lecti[oó]|textus|lextus)\s*:?\s*/i, '').trim();
   s = s.split(/\s+(?:lecti[oó]|te[xz3]+tus)\s*[:.]?\s*/i)[0].trim();
   s = s.replace(/\bev\.?\s*/i, '');
+  s = s.replace(/[:\s]*\bv\.?\s*v\.?\b\.?/gi, '').trim();  // "v.v." (válogatott versek) törlése a link URL-hez
   const zsoltM = s.match(/^(\d+)\.\s*(zsolt[a-záéó]*)\s*(.*)$/i);
   if (zsoltM) {
     const fej = zsoltM[1];
@@ -1047,17 +1048,22 @@ function konyvRovidites(konyv) {
   return BIBLIAI_KONYVEK[norm] || null;
 }
 
+function valogatottVersek(text) {
+  // "v.v." és változatai -> " (válogatott versek)" a MEGJELENÍTETT szövegben
+  return text.replace(/[:\s.]*\bv\.?\s*v\.?\b\.?/gi, ' (válogatott versek)').replace(/\s+/g, ' ').trim();
+}
+
 function renderIgehely(raw) {
   if (!raw) return '';
   const segs = igehelySzakaszok(raw);
   const hasLink = segs.some(s => s.url);
   if (!hasLink) return escHtml(raw);
   if (segs.length === 1) {
-    return `<a class="igehely-link" href="${segs[0].url}" target="_blank" rel="noopener" title="Megnyitás a szentiras.eu-n">${escHtml(raw)}</a>`;
+    return `<a class="igehely-link" href="${segs[0].url}" target="_blank" rel="noopener" title="Megnyitás a szentiras.eu-n">${escHtml(valogatottVersek(raw))}</a>`;
   }
   return segs.map(s => s.url
-    ? `<a class="igehely-link" href="${s.url}" target="_blank" rel="noopener" title="Megnyitás a szentiras.eu-n">${escHtml(s.text)}</a>`
-    : escHtml(s.text)
+    ? `<a class="igehely-link" href="${s.url}" target="_blank" rel="noopener" title="Megnyitás a szentiras.eu-n">${escHtml(valogatottVersek(s.text))}</a>`
+    : escHtml(valogatottVersek(s.text))
   ).join(', ');
 }
 

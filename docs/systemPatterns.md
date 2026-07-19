@@ -17,7 +17,7 @@
 - Ha a `lectures.json` változik: futtasd újra a generátort
   (`python igehirdeto_generator.py`) az előadó-oldalak frissítéséhez. A
   generált oldalakat NE szerkeszd kézzel — a generátor sablonjait módosítsd.
-- Az egyetlen adatforrás a `lectures.json` (1384 rekord) — ezt tölti be az
+- Az egyetlen adatforrás a `lectures.json` (1382 rekord) — ezt tölti be az
   `app.js` a főoldalon, és ebből dolgozik a generátor is.
 - **Kettős slug-implementáció, szinkronban tartandó:** a főoldal kártyáin az
   előadónév linkje (`app.js` `slugify()`) és a generátor `slugify()`-a
@@ -39,6 +39,23 @@
   JSON-LD `WebSite` séma keresősávval) az `index.html` fejlécében, sitemap,
   Search Console. Ha ez a séma változik (pl. valódi al-oldalak jönnek), az
   indexelés miatt körültekintően, redirectekkel kell kezelni.
+
+## Ismert csapdák
+- **`BIBLIAI_KONYVEK` igehely-térkép KÉT helyen él**, egymástól függetlenül:
+  `app.js` (JS) és `igehirdeto_generator.py` (Python). A két másolatnak
+  mindig szinkronban kell maradnia (jelenleg 147-147 bejegyzés). Ha
+  bármelyiket bővíted vagy javítod, a másikat is frissítsd — eltérés esetén a
+  főoldal és az előadó-oldalak eltérően linkelik (vagy nem linkelik) ugyanazt
+  az igehelyet.
+- Az igehely-linkelés (`igehelySzakaszok`/`renderIgehely` app.js-ben,
+  `igehely_szakaszok`/`render_igehely` a generátorban) két dolgot kezel:
+  összetett (több szakaszos, `;`/`,`-vel elválasztott) igehelyeket, és a
+  "v.v." (válogatott versek) rövidítést — ez utóbbi törlődik a link
+  URL-jéből (külön a fejezetre mutat), de megjelenítésben kiírásra kerül.
+- Az `igehirdeto_generator.py` a projekt ÉLŐ, karbantartott része (nem
+  egyszeri segéd-script), ezért a `.gitignore` `*.py` szabálya alól kivétellel
+  verziókövetett (`!igehirdeto_generator.py`), a `kepfeldolgozas.py`
+  mintájára.
 
 ## Média-hivatkozás
 - Az audio R2-ről jön; a HTML/JS csak hivatkozik rá (nem lokális fájl).

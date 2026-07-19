@@ -21,7 +21,7 @@ const CONFIG = {
   BACKGROUND: {
     enabled: true,
     mode: 'random',        // 'static' (mindig [0]) vagy 'random' (véletlenszerű)
-    images: ['images/bg1.JPG', 'images/bg2.JPG', 'images/bg3.JPG'],
+    images: ['images/hero-1.jpg', 'images/hero-2.jpg', 'images/hero-3.jpg', 'images/hero-4.jpg'],
     overlayColor: 'rgba(245,240,232,0.88)',
     blur: '3px',
   },
