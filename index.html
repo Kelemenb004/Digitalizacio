@@ -107,7 +107,7 @@
       <div class="header-search" role="search">
         <label for="searchInput" class="sr-only">Keresés az archívumban</label>
         <input type="search" id="searchInput"
-               placeholder="Keresés cím, előadó, igehely szerint…"
+               placeholder="Keresés cím, előadó, igehely, év szerint… (pl. Takaró Károly 2006)"
                autocomplete="off" spellcheck="false">
         <button class="search-btn" id="searchBtn" aria-label="Keresés indítása">Keresés</button>
       </div>
@@ -169,6 +169,10 @@
         <label class="filter-field">
           <span class="filter-field-label">Előadó</span>
           <select id="speakerFilter" aria-label="Előadó szűrő"><option value="">Minden előadó</option></select>
+        </label>
+        <label class="filter-field">
+          <span class="filter-field-label">Év</span>
+          <select id="yearFilter" aria-label="Év szűrő"><option value="">Minden év</option></select>
         </label>
         <label class="filter-field">
           <span class="filter-field-label">Igehely</span>

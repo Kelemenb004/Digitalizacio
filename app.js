@@ -29,6 +29,7 @@ function cacheDOM() {
     searchBtn:       g('searchBtn'),
     categoryFilter:  g('categoryFilter'),
     speakerFilter:   g('speakerFilter'),
+    yearFilter:      g('yearFilter'),
     igehelyFilter:   g('igehelyFilter'),
     sortSelect:      g('sortSelect'),
     favToggle:       g('favToggle'),
@@ -215,6 +216,18 @@ function populateFilters() {
 
   appendOptions(dom.categoryFilter, kategoriák);
   appendOptions(dom.speakerFilter, előadók);
+
+  // Év-szűrő feltöltése (a datum mezőkből, csökkenő sorrendben)
+  const evek = [...new Set(state.lectures
+    .map(l => (l.datum || '').slice(0, 4))
+    .filter(ev => /^\d{4}$/.test(ev)))].sort((a, b) => b.localeCompare(a));
+  if (dom.yearFilter) {
+    evek.forEach(ev => {
+      const opt = document.createElement('option');
+      opt.value = ev; opt.textContent = ev;
+      dom.yearFilter.appendChild(opt);
+    });
+  }
 }
 
 function appendOptions(select, values) {
@@ -295,6 +308,8 @@ function updateStats() {
 /* ---------- Szűrés és rendezés ---------- */
 function applyFilters() {
   const q       = normalizeStr(dom.searchInput?.value || '');
+  const { szoveg: qSzoveg, datumMintak } = parseDatumKereses(dom.searchInput?.value || '');
+  const yearSel = dom.yearFilter?.value || '';
   const igehely = normalizeStr(dom.igehelyFilter?.value || '');
   const cat     = dom.categoryFilter?.value || '';
   const speaker = dom.speakerFilter?.value || '';
@@ -312,9 +327,19 @@ function applyFilters() {
       if (!hay.includes(igehely)) return false;
     }
 
-    if (q) {
+    // Év-szűrő (hamburger-menüből)
+    if (yearSel && (l.datum || '').slice(0, 4) !== yearSel) return false;
+
+    // Okos kereső: dátum-minta illesztése (a keresőmezőben megadott év/hónap)
+    if (datumMintak.length) {
+      const d = l.datum || '';
+      if (!datumMintak.some(m => d.startsWith(m))) return false;
+    }
+
+    // Okos kereső: a maradék szöveg a megszokott mezőkben
+    if (qSzoveg) {
       const hay = normalizeStr([l.cim, l.eloado, l.lectio, l.textus, l.megjegyzes].join(' '));
-      if (!hay.includes(q)) return false;
+      if (!hay.includes(qSzoveg)) return false;
     }
 
     return true;
@@ -361,6 +386,7 @@ function resetFilters() {
   if (dom.igehelyFilter)  dom.igehelyFilter.value  = '';
   if (dom.categoryFilter) dom.categoryFilter.value = '';
   if (dom.speakerFilter)  dom.speakerFilter.value   = '';
+  if (dom.yearFilter)     dom.yearFilter.value      = '';
 
   state.showFavOnly = false;
   if (dom.favToggle) {
@@ -766,6 +792,7 @@ function setupEventListeners() {
 
   dom.categoryFilter.addEventListener('change', () => { refreshFilterOptions(); applyFilters(); });
   dom.speakerFilter.addEventListener('change', () => { refreshFilterOptions(); applyFilters(); });
+  dom.yearFilter?.addEventListener('change', () => { refreshFilterOptions(); applyFilters(); });
   if (dom.sortSelect) dom.sortSelect.addEventListener('change', applyFilters);
 
   if (dom.favToggle) {
@@ -893,6 +920,31 @@ function normalizeStr(s) {
     .replace(/[^a-z0-9\s]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+// A keresőszövegből kinyeri az évszám / év-hónap mintákat.
+// Visszaad: { szoveg: "maradék keresőszöveg", datumMintak: ["2006", "2006-06", ...] }
+const HONAP_NEVEK = {
+  januar:'01', februar:'02', marcius:'03', aprilis:'04', majus:'05', junius:'06',
+  julius:'07', augusztus:'08', szeptember:'09', oktober:'10', november:'11', december:'12'
+};
+function parseDatumKereses(q) {
+  let qn = normalizeStr(q);
+  const mintak = [];
+  // "2006-12" / "2006.12" / "2006 12"
+  qn = qn.replace(/\b(19\d{2}|20[01]\d)[\s.\-]+(\d{1,2})\b/g, (all, ev, ho) => {
+    const h = ho.padStart(2, '0');
+    if (+h >= 1 && +h <= 12) { mintak.push(`${ev}-${h}`); return ' '; }
+    return all;
+  });
+  // "2006 december" és "december 2006"
+  for (const [hnev, hszam] of Object.entries(HONAP_NEVEK)) {
+    qn = qn.replace(new RegExp(`\\b(19\\d{2}|20[01]\\d)\\s+${hnev}\\b`, 'g'), (a, ev) => { mintak.push(`${ev}-${hszam}`); return ' '; });
+    qn = qn.replace(new RegExp(`\\b${hnev}\\s+(19\\d{2}|20[01]\\d)\\b`, 'g'), (a, ev) => { mintak.push(`${ev}-${hszam}`); return ' '; });
+  }
+  // önálló évszám "2006"
+  qn = qn.replace(/\b(19\d{2}|20[01]\d)\b/g, (a, ev) => { mintak.push(ev); return ' '; });
+  return { szoveg: qn.replace(/\s+/g, ' ').trim(), datumMintak: mintak };
 }
 
 function escHtml(str) {
