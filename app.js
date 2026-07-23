@@ -308,7 +308,7 @@ function updateStats() {
 /* ---------- Szűrés és rendezés ---------- */
 function applyFilters() {
   const q       = normalizeStr(dom.searchInput?.value || '');
-  const { szoveg: qSzoveg, datumMintak } = parseDatumKereses(dom.searchInput?.value || '');
+  const { szoveg: qSzoveg, evMintak, honapMintak } = parseDatumKereses(dom.searchInput?.value || '');
   const yearSel = dom.yearFilter?.value || '';
   const igehely = normalizeStr(dom.igehelyFilter?.value || '');
   const cat     = dom.categoryFilter?.value || '';
@@ -330,10 +330,15 @@ function applyFilters() {
     // Év-szűrő (hamburger-menüből)
     if (yearSel && (l.datum || '').slice(0, 4) !== yearSel) return false;
 
-    // Okos kereső: dátum-minta illesztése (a keresőmezőben megadott év/hónap)
-    if (datumMintak.length) {
+    // Okos kereső: év / év-hónap minta (a datum kezdődjön a mintával)
+    if (evMintak.length) {
       const d = l.datum || '';
-      if (!datumMintak.some(m => d.startsWith(m))) return false;
+      if (!evMintak.some(m => d.startsWith(m))) return false;
+    }
+    // Okos kereső: önálló hónap-minta (bármely évből) - a datum 5-7. karaktere a hónap
+    if (honapMintak.length) {
+      const d = l.datum || '';
+      if (d.length < 7 || !honapMintak.some(m => d.slice(4, 7) === m)) return false;
     }
 
     // Okos kereső: a maradék szöveg a megszokott mezőkben
@@ -922,29 +927,47 @@ function normalizeStr(s) {
     .trim();
 }
 
-// A keresőszövegből kinyeri az évszám / év-hónap mintákat.
-// Visszaad: { szoveg: "maradék keresőszöveg", datumMintak: ["2006", "2006-06", ...] }
-const HONAP_NEVEK = {
-  januar:'01', februar:'02', marcius:'03', aprilis:'04', majus:'05', junius:'06',
-  julius:'07', augusztus:'08', szeptember:'09', oktober:'10', november:'11', december:'12'
-};
+// Hónapnevek -> sorszám. A felismerés PREFIX-alapú: egy min. 3 betűs szó akkor
+// számít hónapnak, ha egy hónapnév ELEJE (pl. "már"/"márc" -> március, de "márk" nem,
+// mert a "marcius" nem kezdődik "mark"-kal). Így nincs névütközés (János, Júlia, Márk...).
+const HONAP_NEVEK = [
+  ['januar','01'], ['februar','02'], ['marcius','03'], ['aprilis','04'],
+  ['majus','05'], ['junius','06'], ['julius','07'], ['augusztus','08'],
+  ['szeptember','09'], ['oktober','10'], ['november','11'], ['december','12']
+];
+function honapPrefix(szo) {
+  if (szo.length < 3) return null;
+  for (const [hnev, hszam] of HONAP_NEVEK) {
+    if (hnev.startsWith(szo)) return hszam;
+  }
+  return null;
+}
 function parseDatumKereses(q) {
   let qn = normalizeStr(q);
-  const mintak = [];
-  // "2006-12" / "2006.12" / "2006 12"
+  const evMintak = [];
+  const honapMintak = [];
   qn = qn.replace(/\b(19\d{2}|20[01]\d)[\s.\-]+(\d{1,2})\b/g, (all, ev, ho) => {
     const h = ho.padStart(2, '0');
-    if (+h >= 1 && +h <= 12) { mintak.push(`${ev}-${h}`); return ' '; }
+    if (+h >= 1 && +h <= 12) { evMintak.push(`${ev}-${h}`); return ' '; }
     return all;
   });
-  // "2006 december" és "december 2006"
-  for (const [hnev, hszam] of Object.entries(HONAP_NEVEK)) {
-    qn = qn.replace(new RegExp(`\\b(19\\d{2}|20[01]\\d)\\s+${hnev}\\b`, 'g'), (a, ev) => { mintak.push(`${ev}-${hszam}`); return ' '; });
-    qn = qn.replace(new RegExp(`\\b${hnev}\\s+(19\\d{2}|20[01]\\d)\\b`, 'g'), (a, ev) => { mintak.push(`${ev}-${hszam}`); return ' '; });
-  }
-  // önálló évszám "2006"
-  qn = qn.replace(/\b(19\d{2}|20[01]\d)\b/g, (a, ev) => { mintak.push(ev); return ' '; });
-  return { szoveg: qn.replace(/\s+/g, ' ').trim(), datumMintak: mintak };
+  qn = qn.replace(/\b(19\d{2}|20[01]\d)\s+([a-z]{3,})\b/g, (all, ev, szo) => {
+    const h = honapPrefix(szo);
+    if (h) { evMintak.push(`${ev}-${h}`); return ' '; }
+    return all;
+  });
+  qn = qn.replace(/\b([a-z]{3,})\s+(19\d{2}|20[01]\d)\b/g, (all, szo, ev) => {
+    const h = honapPrefix(szo);
+    if (h) { evMintak.push(`${ev}-${h}`); return ' '; }
+    return all;
+  });
+  qn = qn.replace(/\b(19\d{2}|20[01]\d)\b/g, (a, ev) => { evMintak.push(ev); return ' '; });
+  qn = qn.replace(/\b[a-z]{3,}\b/g, (szo) => {
+    const h = honapPrefix(szo);
+    if (h) { honapMintak.push(`-${h}`); return ' '; }
+    return szo;
+  });
+  return { szoveg: qn.replace(/\s+/g, ' ').trim(), evMintak, honapMintak };
 }
 
 function escHtml(str) {
