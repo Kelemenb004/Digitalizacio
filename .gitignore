@@ -16,3 +16,8 @@ images/hatterkep og picture.JPG
 # Nem használt fájlok
 images/pecset-logo.png
 images/IMG-d35c9968e856b7312d58b409f794cd4a-V.jpg
+
+# Adatmódosító scriptek biztonsági mentései / riport-fájljai
+*.bak_*
+hianyzo_2013_elott.csv
+datumhiba_fajlok.csv

@@ -41,6 +41,12 @@
   indexelés miatt körültekintően, redirectekkel kell kezelni.
 
 ## Ismert csapdák
+- A `lectures.json` TÖMÖR, egysoros JSON (nincs behúzás). Bármilyen író
+  script `separators=(",", ":")` formátummal írjon, különben felduzzad a
+  fájl és óriási lesz a git diff.
+- A `kategoria` mező korábban a `cim` mezőből lett átmásolva (97%-ban azonos
+  volt) - ezért burjánzott 45-re. A reform után a kategória a csoportosítás,
+  a `cim` hordozza a részletet (sorszám, egyedi cím).
 - **`BIBLIAI_KONYVEK` igehely-térkép KÉT helyen él**, egymástól függetlenül:
   `app.js` (JS) és `igehirdeto_generator.py` (Python). A két másolatnak
   mindig szinkronban kell maradnia (jelenleg 147-147 bejegyzés). Ha
