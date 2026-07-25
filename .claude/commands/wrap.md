@@ -2,6 +2,7 @@ frissítsd a docs/activeContext.md-t (jelenlegi fókusz, legutóbbi
 változások, következő lépések) és a docs/progress.md-t (mi kész, mi hátravan, 
 ismert hibák) a mai munka alapján. A CLAUDE.md-t csak akkor módosítsd, ha 
 projektszintű tény változott (stack, konvenció, kulcsparancs) — és tartsd rövidnek.
+Ha a session során oldalgenerátor, URL-séma vagy stack változott, a CLAUDE.md és az érintett docs/ architektúra-fájlok (systemPatterns, techContext) is frissítendők.
 
 Tömör, magas jelértékű bejegyzéseket írj, ne fejlesztési naplót. A végén 
-listázd, mit módosítottál, hogy commitolni tudjam.
+listázd, mit módosítottál, hogy commitolni tudjam. és írd meg a push commithoz szűkséges commentet.
