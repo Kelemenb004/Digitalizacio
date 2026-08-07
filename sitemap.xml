@@ -3,6 +3,7 @@
   <url><loc>https://kelenref100.hu/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
   <url><loc>https://kelenref100.hu/igehirdetok/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://kelenref100.hu/impresszum/</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://kelenref100.hu/videok/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kelenref100.hu/igehirdeto/takaro-karoly/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kelenref100.hu/igehirdeto/pocsaji-miklos/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://kelenref100.hu/igehirdeto/kelemen-zoltan/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>

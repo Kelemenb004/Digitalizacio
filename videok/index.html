@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://i.ytimg.com; media-src 'self' https://pub-07c808b19cf0458187fdb14c1d5d0129.r2.dev; frame-src https://www.youtube-nocookie.com; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none';">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="description" content="Videófelvételek a Budapest-Kelenföldi Református Egyházközség történetéből – beiktatás, evangelizációk, ünnepi alkalmak. A friss istentiszteletek a gyülekezet YouTube-csatornáján érhetők el.">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#1B2E5C">
+  <link rel="canonical" href="https://kelenref100.hu/videok/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Videófelvételek – Kelenföldi Református Digitális Hangarchívum">
+  <meta property="og:description" content="Archív videófelvételek a gyülekezet történetéből. A friss istentiszteletek a YouTube-csatornán.">
+  <meta property="og:url" content="https://kelenref100.hu/videok/">
+  <title>Videófelvételek – Kelenföldi Református Digitális Hangarchívum</title>
+  <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+  <link rel="icon" href="/favicon-16x16.png" sizes="16x16" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <script>
+    (function () {
+      const saved = localStorage.getItem('hangarchivum_theme');
+      const dark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    })();
+  </script>
+  <style>
+    /* Videók oldal – a meglévő legal-page stílusra épül */
+    .videok-intro { margin-bottom: 2rem; }
+    .videok-channel {
+      display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+      padding: 1.25rem 1.5rem; margin: 1.5rem 0 2.5rem;
+      background: var(--surface-2, rgba(127,127,127,0.08));
+      border: 1px solid var(--border, rgba(127,127,127,0.2));
+      border-radius: 12px;
+    }
+    .videok-channel-text { flex: 1 1 260px; }
+    .videok-channel-text strong { display: block; font-size: 1.05rem; margin-bottom: 0.2rem; }
+    .videok-channel-text span { opacity: 0.8; font-size: 0.95rem; }
+    .videok-channel-btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.7rem 1.2rem; border-radius: 8px; text-decoration: none;
+      background: #c4302b; color: #fff; font-weight: 600; white-space: nowrap;
+      transition: filter 0.15s ease;
+    }
+    .videok-channel-btn:hover { filter: brightness(1.1); }
+    .videok-grid {
+      display: grid; grid-template-columns: 1fr; gap: 2rem;
+    }
+    @media (min-width: 720px) {
+      .videok-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .video-card {
+      border: 1px solid var(--border, rgba(127,127,127,0.2));
+      border-radius: 12px; overflow: hidden;
+      background: var(--surface-1, rgba(127,127,127,0.04));
+    }
+    .video-embed {
+      position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000;
+    }
+    .video-embed iframe {
+      position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
+    }
+    .video-meta { padding: 1rem 1.15rem 1.25rem; }
+    .video-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin: 0 0 0.4rem; line-height: 1.35; }
+    .video-sub { font-size: 0.9rem; opacity: 0.85; margin: 0; }
+    .video-badge {
+      display: inline-block; font-size: 0.75rem; font-weight: 600;
+      padding: 0.15rem 0.55rem; border-radius: 999px; margin-bottom: 0.5rem;
+      background: var(--accent-soft, rgba(27,46,92,0.12)); color: var(--accent, #1B2E5C);
+    }
+    [data-theme="dark"] .video-badge { background: rgba(255,255,255,0.1); color: inherit; }
+  </style>
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="header-inner">
+      <div class="header-brand">
+        <a href="/" style="display:flex;align-items:center;gap:0.6rem;text-decoration:none;">
+          <img class="header-logo" src="/images/logo.png" alt="Kelenföldi Református Egyházközség – Főoldal" title="Vissza a főoldalra">
+          <div class="header-titles">
+            <h1>Digitális Hangarchívum</h1>
+            <p class="header-subtitle">Kelenföldi Református Egyházközség</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="legal-page" role="main">
+    <div class="legal-inner">
+      <a href="/" class="legal-back">← Vissza a főoldalra</a>
+      <h1 class="legal-title">Videófelvételek</h1>
+
+      <div class="videok-intro">
+        <p>Néhány kiemelt videófelvétel a gyülekezet történetéből – lelkipásztori beiktatás,
+        régi evangelizációk és ünnepi alkalmak. Ezek a felvételek kiegészítik a
+        hangarchívumot azzal, amit csak mozgóképen lehet átélni.</p>
+      </div>
+
+      <div class="videok-channel">
+        <div class="videok-channel-text">
+          <strong>A gyülekezet YouTube-csatornája</strong>
+          <span>A friss istentiszteletek és a legújabb igehirdetések itt érhetők el hétről hétre.</span>
+        </div>
+        <a class="videok-channel-btn" href="https://www.youtube.com/channel/UCgxsQUUs2R8l6kT-hQr-Qlg" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg>
+          Csatorna megnyitása
+        </a>
+      </div>
+
+      <div class="videok-grid" id="videokGrid"></div>
+    </div>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-inner">
+      <div class="footer-main">
+        <p class="footer-brand">Digitális Hangarchívum</p>
+        <p class="footer-copyright">A hanganyagok a Budapest-Kelenföldi Református Egyházközség tulajdonát képezik.</p>
+        <p class="footer-copyright">© 2026 Kelemen Botond – Minden jog fenntartva.</p>
+      </div>
+      <div class="footer-meta">
+        <p class="footer-impressum">
+          <span class="footer-impressum-label">Fejlesztés és üzemeltetés:</span> Kelemen Botond
+          &nbsp;·&nbsp; <a href="/igehirdetok/" class="footer-email">Igehirdetők</a>
+          &nbsp;·&nbsp; <a href="/videok/" class="footer-email">Videók</a>
+          &nbsp;·&nbsp; <a href="/impresszum/" class="footer-email">Impresszum</a>
+        </p>
+        <p class="footer-contact">
+          Hibát találtál, vagy van egy ötleted?
+          <a href="mailto:kelemen.botond04@gmail.com?subject=Hangarch%C3%ADvum%20visszajelz%C3%A9s" class="footer-email">Írj nekem!</a>
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // A videók adatai a videok.json-ból töltődnek (könnyen bővíthető).
+    const HONAP = ['január','február','március','április','május','június','július','augusztus','szeptember','október','november','december'];
+    function datumSzoveg(d) {
+      if (!d) return '';
+      if (/^\d{4}$/.test(d)) return d;                 // csak év
+      const m = d.match(/^(\d{4})-(\d{2})-(\d{2})$/);   // teljes dátum
+      if (m) return `${m[1]}. ${HONAP[+m[2]-1]} ${+m[3]}.`;
+      return d;
+    }
+    function esc(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    fetch('/videok.json')
+      .then(r => r.json())
+      .then(videok => {
+        const grid = document.getElementById('videokGrid');
+        grid.innerHTML = videok.map(v => {
+          const alrészek = [];
+          const d = datumSzoveg(v.datum);
+          if (v.megjegyzes) alrészek.push(esc(v.megjegyzes));
+          if (d) alrészek.push(d);
+          if (v.eloado) alrészek.push(esc(v.eloado));
+          const sub = alrészek.join(' · ');
+          return `
+            <article class="video-card">
+              <div class="video-embed">
+                <iframe src="https://www.youtube-nocookie.com/embed/${esc(v.id)}"
+                        title="${esc(v.cim)}" loading="lazy"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+              </div>
+              <div class="video-meta">
+                ${v.alkalom ? `<span class="video-badge">${esc(v.alkalom)}</span>` : ''}
+                <h2 class="video-title">${esc(v.cim)}</h2>
+                ${sub ? `<p class="video-sub">${sub}</p>` : ''}
+              </div>
+            </article>`;
+        }).join('');
+      })
+      .catch(() => {
+        document.getElementById('videokGrid').innerHTML =
+          '<p style="opacity:.8">A videók jelenleg nem tölthetők be. Kérlek, próbáld újra később.</p>';
+      });
+  </script>
+</body>
+</html>
