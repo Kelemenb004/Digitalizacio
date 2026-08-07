@@ -29,7 +29,6 @@
     })();
   </script>
   <style>
-    /* Videók oldal – a meglévő legal-page stílusra épül */
     .videok-intro { margin-bottom: 2rem; }
     .videok-channel {
       display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
@@ -48,12 +47,8 @@
       transition: filter 0.15s ease;
     }
     .videok-channel-btn:hover { filter: brightness(1.1); }
-    .videok-grid {
-      display: grid; grid-template-columns: 1fr; gap: 2rem;
-    }
-    @media (min-width: 720px) {
-      .videok-grid { grid-template-columns: repeat(2, 1fr); }
-    }
+    .videok-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+    @media (min-width: 720px) { .videok-grid { grid-template-columns: repeat(2, 1fr); } }
     .video-card {
       border: 1px solid var(--border, rgba(127,127,127,0.2));
       border-radius: 12px; overflow: hidden;
@@ -65,6 +60,27 @@
     .video-embed iframe {
       position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
     }
+    /* Poszter (borítókép + play gomb) – kattintásig ez látszik, nem tölt YouTube-ot */
+    .video-poster {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      border: 0; padding: 0; margin: 0; cursor: pointer; display: block;
+      background-size: cover; background-position: center; background-color: #000;
+    }
+    .video-poster::before {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.35));
+      transition: background 0.15s ease;
+    }
+    .video-poster:hover::before { background: linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.2)); }
+    .video-poster:focus-visible { outline: 3px solid #fff; outline-offset: -3px; }
+    .video-play {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 68px; height: 48px; border-radius: 14px;
+      background: rgba(196,48,43,0.92); display: flex; align-items: center; justify-content: center;
+      transition: transform 0.15s ease, background 0.15s ease; pointer-events: none;
+    }
+    .video-poster:hover .video-play { transform: translate(-50%,-50%) scale(1.08); background: #c4302b; }
+    .video-play svg { width: 26px; height: 26px; fill: #fff; margin-left: 3px; }
     .video-meta { padding: 1rem 1.15rem 1.25rem; }
     .video-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin: 0 0 0.4rem; line-height: 1.35; }
     .video-sub { font-size: 0.9rem; opacity: 0.85; margin: 0; }
@@ -139,43 +155,78 @@
   </footer>
 
   <script>
-    // A videók adatai a videok.json-ból töltődnek (könnyen bővíthető).
     const HONAP = ['január','február','március','április','május','június','július','augusztus','szeptember','október','november','december'];
     function datumSzoveg(d) {
       if (!d) return '';
-      if (/^\d{4}$/.test(d)) return d;                 // csak év
-      const m = d.match(/^(\d{4})-(\d{2})-(\d{2})$/);   // teljes dátum
+      if (/^\d{4}$/.test(d)) return d;
+      const m = d.match(/^(\d{4})-(\d{2})-(\d{2})$/);
       if (m) return `${m[1]}. ${HONAP[+m[2]-1]} ${+m[3]}.`;
       return d;
     }
     function esc(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+    // Egy videó tényleges betöltése: a poszter helyére kerül az iframe (autoplay).
+    // A már lejátszó videót előbb visszaállítjuk poszterre -> egyszerre csak egy szól.
+    let aktivEmbed = null;
+    function betolt(embedEl, id, cim) {
+      if (aktivEmbed && aktivEmbed !== embedEl) visszaPoszter(aktivEmbed);
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
+      iframe.title = cim;
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      iframe.setAttribute('allowfullscreen', '');
+      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+      embedEl.innerHTML = '';
+      embedEl.appendChild(iframe);
+      aktivEmbed = embedEl;
+    }
+    function visszaPoszter(embedEl) {
+      const btn = embedEl._poszter;
+      if (btn) { embedEl.innerHTML = ''; embedEl.appendChild(btn); }
+      if (aktivEmbed === embedEl) aktivEmbed = null;
+    }
+
     fetch('/videok.json')
       .then(r => r.json())
       .then(videok => {
         const grid = document.getElementById('videokGrid');
-        grid.innerHTML = videok.map(v => {
+        videok.forEach(v => {
+          const card = document.createElement('article');
+          card.className = 'video-card';
+
+          const embed = document.createElement('div');
+          embed.className = 'video-embed';
+
+          const poszter = document.createElement('button');
+          poszter.className = 'video-poster';
+          poszter.type = 'button';
+          poszter.setAttribute('aria-label', v.cim + ' – lejátszás');
+          // A borítókép a YouTube-ról (i.ytimg.com, a CSP engedi). hqdefault mindig létezik.
+          poszter.style.backgroundImage = `url('https://i.ytimg.com/vi/${esc(v.id)}/hqdefault.jpg')`;
+          poszter.innerHTML = '<span class="video-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>';
+          poszter.addEventListener('click', () => betolt(embed, v.id, v.cim));
+
+          embed._poszter = poszter;
+          embed.appendChild(poszter);
+
           const alrészek = [];
           const d = datumSzoveg(v.datum);
           if (v.megjegyzes) alrészek.push(esc(v.megjegyzes));
           if (d) alrészek.push(d);
           if (v.eloado) alrészek.push(esc(v.eloado));
           const sub = alrészek.join(' · ');
-          return `
-            <article class="video-card">
-              <div class="video-embed">
-                <iframe src="https://www.youtube-nocookie.com/embed/${esc(v.id)}"
-                        title="${esc(v.cim)}" loading="lazy"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
-              </div>
-              <div class="video-meta">
-                ${v.alkalom ? `<span class="video-badge">${esc(v.alkalom)}</span>` : ''}
-                <h2 class="video-title">${esc(v.cim)}</h2>
-                ${sub ? `<p class="video-sub">${sub}</p>` : ''}
-              </div>
-            </article>`;
-        }).join('');
+
+          const meta = document.createElement('div');
+          meta.className = 'video-meta';
+          meta.innerHTML = `
+            ${v.alkalom ? `<span class="video-badge">${esc(v.alkalom)}</span>` : ''}
+            <h2 class="video-title">${esc(v.cim)}</h2>
+            ${sub ? `<p class="video-sub">${sub}</p>` : ''}`;
+
+          card.appendChild(embed);
+          card.appendChild(meta);
+          grid.appendChild(card);
+        });
       })
       .catch(() => {
         document.getElementById('videokGrid').innerHTML =
