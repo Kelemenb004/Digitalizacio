@@ -1109,20 +1109,31 @@ input[type="range"]#volumeSlider:focus {
   .filters-panel-footer .filter-reset,
   .filters-panel-done { min-height: 44px; }
 
-  /* Lejátszó mobilon */
+  /* Lejátszó mobilon – Spotify-szerű kétsoros elrendezés */
   .player-inner {
     flex-wrap: wrap;
-    padding: 0.625rem 1rem;
-    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    gap: 0.4rem 0.6rem;
     align-content: center;
     height: var(--player-h);
   }
-  .player-info     { order: 1; flex: 1; min-width: 0; }
-  .close-btn       { order: 2; }
-  .player-controls { order: 3; }
-  .player-timeline { order: 4; flex: 1 1 100%; max-width: none; }
-  .player-volume   { display: none; }
+  /* 1. sor: nyíl + cím/előadó (bal) ... play + skip (jobb) ... X */
+  .player-expand-btn { order: 1; flex: 0 0 auto; }
+  .player-info       { order: 1; flex: 1 1 auto; min-width: 0; }
+  .player-controls   { order: 2; flex: 0 0 auto; gap: 0.35rem; }
+  .close-btn         { order: 3; flex: 0 0 auto; }
+  /* 2. sor: teljes szélességű idővonal */
+  .player-timeline   { order: 4; flex: 1 1 100%; max-width: none; margin-top: 0.15rem; }
+
+  /* Telefonon rejtett: sebesség, hangerő, megosztás (a nagy nézetben elérhető) */
+  .player-volume    { display: none; }
+  .speed-select     { display: none; }
+  .player-share-btn { display: none; }
+
   .ctrl-btn        { min-height: 40px; }
+
+  /* A cím/előadó legyen koppintható a nagy nézethez (a JS is erre köt) */
+  .player-info { cursor: pointer; }
 
   .footer-inner { flex-direction: column; gap: 1.25rem; text-align: center; }
   .footer-meta { text-align: center; align-items: center; }
