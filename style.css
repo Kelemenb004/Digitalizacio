@@ -754,6 +754,7 @@ html:not([data-theme="dark"]) .icon-moon { display: block; }
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 600;
+  max-width: 100%;
 }
 
 .player-speaker {
@@ -763,6 +764,7 @@ html:not([data-theme="dark"]) .icon-moon { display: block; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .player-controls {
@@ -1118,8 +1120,8 @@ input[type="range"]#volumeSlider:focus {
     height: var(--player-h);
   }
   /* 1. sor: nyíl + cím/előadó (bal) ... play + skip (jobb) ... X */
-  .player-expand-btn { order: 1; flex: 0 0 auto; }
-  .player-info       { order: 1; flex: 1 1 auto; min-width: 0; }
+  .player-expand-btn { display: none; }
+  .player-info       { order: 1; flex: 1 1 0; min-width: 0; max-width: 100%; }
   .player-controls   { order: 2; flex: 0 0 auto; gap: 0.35rem; }
   .close-btn         { order: 3; flex: 0 0 auto; }
   /* 2. sor: teljes szélességű idővonal */
