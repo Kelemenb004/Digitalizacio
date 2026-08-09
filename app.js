@@ -670,13 +670,31 @@ function updateCardStates() {
 
 /* ---------- Véletlen igehirdetés ---------- */
 function playRandomLecture() {
-  const pool = state.filtered.length > 0 ? state.filtered : state.lectures;
+  // A random a TELJES aktuális listából választ (szűrt lista, vagy ha nincs szűrő, az összes).
+  const pool = state.filtered.length > 0 ? state.filtered : state.lectures.slice();
   if (!pool.length) return;
 
   const pick = pool[Math.floor(Math.random() * pool.length)];
+
+  // A pick-et a lista ÉLÉRE emeljük, hogy a tetején jelenjen meg - így NEM kell több száz
+  // kártyát betölteni a mélyből (ez fagyasztotta meg a telefont). A többi elem sorrendje marad.
+  state.filtered = [pick, ...pool.filter(l => l.path !== pick.path)];
+
+  // Újrarenderelés az első adaggal (a pick lesz az első kártya).
+  state.page = 0;
+  renderLectures(state.filtered);
+
   startPlaying(pick);
 
-  revealCard(pick.path, { highlight: true });
+  // Görgessünk a lap tetejére (a pick ott az első kártya) és emeljük ki.
+  requestAnimationFrame(() => {
+    const card = findCard(pick.path);
+    if (card) {
+      scrollCardIntoView(card);
+      card.classList.add('just-shared');
+      setTimeout(() => card.classList.remove('just-shared'), 2600);
+    }
+  });
 }
 
 function findCard(path) {
@@ -1332,9 +1350,25 @@ function handleUrlHash() {
     const path = decodeURIComponent(hash.slice('#felvetel='.length));
     const lecture = state.lectures.find(l => l.path === path);
     if (!lecture) return;
+
+    // A megosztott felvételt a lista ÉLÉRE emeljük, hogy a tetején jelenjen meg - így NEM
+    // kell több száz kártyát betölteni a mélyből (ez fagyasztaná meg a telefont, ugyanúgy
+    // mint a randomnál). A szűrők/keresés alaphelyzetbe, hogy a felvétel biztosan látszódjon.
+    const pool = state.filtered.length > 0 ? state.filtered : state.lectures.slice();
+    state.filtered = [lecture, ...pool.filter(l => l.path !== lecture.path)];
+    state.page = 0;
+    renderLectures(state.filtered);
+
     startPlaying(lecture);
-    // Megosztott linkből érkezés: gördülő figyelemfelhívással
-    revealCard(lecture.path, { highlight: true });
+
+    requestAnimationFrame(() => {
+      const card = findCard(lecture.path);
+      if (card) {
+        scrollCardIntoView(card);
+        card.classList.add('just-shared');
+        setTimeout(() => card.classList.remove('just-shared'), 2600);
+      }
+    });
   } catch {}
 }
 
