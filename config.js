@@ -21,7 +21,7 @@ const CONFIG = {
   BACKGROUND: {
     enabled: true,
     mode: 'random',        // 'static' (mindig [0]) vagy 'random' (véletlenszerű)
-    images: ['images/hero-1.jpg', 'images/hero-2.jpg', 'images/hero-3.jpg', 'images/hero-4.jpg'],
+    images: ['images/hero-kazetta-biblia.jpg', 'images/hero-kazetta.jpg', 'images/hero-1.jpg', 'images/hero-2.jpg', 'images/hero-3.jpg', 'images/hero-4.jpg', 'images/2b4a6b5b-53a9-45f3-b229-f348044ae02a.jpg', 'images/6acb67bc-a5c1-4b85-9e49-481b9143d5e1.jpg', 'images/a9b90fc1-820a-418e-ad18-3ea2c8ad491e.jpg'],
     overlayColor: 'rgba(245,240,232,0.88)',
     blur: '3px',
   },

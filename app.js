@@ -109,14 +109,14 @@ async function loadLectures() {
 
 /* ---------- Hero háttérkép – véletlenszerű választás ---------- */
 const HERO_BACKGROUNDS = [
+  'images/hero-kazetta-biblia.jpg',
   'images/hero-kazetta.jpg',
-  'images/296bbcb1-66d6-4a46-b1aa-0592a334b87c.jpg',
-  'images/2b4a6b5b-53a9-45f3-b229-f348044ae02a.jpg',
-  'images/6acb67bc-a5c1-4b85-9e49-481b9143d5e1.jpg',
   'images/hero-1.jpg',
   'images/hero-2.jpg',
   'images/hero-3.jpg',
   'images/hero-4.jpg',
+  'images/2b4a6b5b-53a9-45f3-b229-f348044ae02a.jpg',
+  'images/6acb67bc-a5c1-4b85-9e49-481b9143d5e1.jpg',
   'images/a9b90fc1-820a-418e-ad18-3ea2c8ad491e.jpg',
 ];
 
@@ -607,9 +607,11 @@ function startPlaying(lecture) {
   dom.player.classList.remove('hidden');
 
   dom.audio.play().catch(err => {
-    // Az AbortError ártalmatlan: akkor jön, ha egy új lejátszás megszakítja az előzőt
-    // (pl. gyors váltás felvételek között, vagy a böngésző még tölt). Ilyenkor NINCS valódi hiba.
+    // AbortError: egy új lejátszás megszakította az előzőt (gyors váltás) - ártalmatlan.
     if (err.name === 'AbortError') return;
+    // NotAllowedError: a böngésző interakció előtt nem indít hangot (pl. megosztott linkből
+    // érkezéskor). Ez NEM hiba - a felhasználó a Lejátszás gombbal elindítja. Ne írjunk hibát.
+    if (err.name === 'NotAllowedError') return;
     console.warn('Lejátszási hiba:', err.message);
     showPlayerError('A felvétel most nem indítható el. Próbáld meg újra.');
   });
@@ -671,11 +673,7 @@ function playRandomLecture() {
   const pick = pool[Math.floor(Math.random() * pool.length)];
   startPlaying(pick);
 
-  // Görgessünk a kártyához, ha látható
-  const card = findCard(pick.path);
-  if (card) {
-    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
+  revealCard(pick.path, { highlight: true });
 }
 
 function findCard(path) {
@@ -774,8 +772,15 @@ function setupEventListeners() {
 
   const homeLogo = document.getElementById('homeLogo');
   function goHome() {
-    resetFilters();                                   // minden szűrő + keresés törlése (a fav-nézetet is)
-    window.scrollTo({ top: 0, behavior: 'smooth' });  // görgetés a lap tetejére
+    // Valódi főoldal-visszatérés: tiszta újratöltés a hash (#felvetel=...) NÉLKÜL.
+    // Ez mindent alaphelyzetbe tesz - lejátszó leáll, link tisztul, szűrők/keresés törlődik.
+    // Ha már a tiszta főoldalon vagyunk (nincs hash), csak felgörgetünk, nem töltünk újra feleslegesen.
+    if (window.location.hash || window.location.search) {
+      window.location.href = window.location.pathname;   // pl. "/" -> teljes újratöltés
+    } else {
+      resetFilters();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
   if (homeLogo) {
     homeLogo.addEventListener('click', goHome);
@@ -1161,9 +1166,55 @@ function handleUrlHash() {
     const lecture = state.lectures.find(l => l.path === path);
     if (!lecture) return;
     startPlaying(lecture);
-    const card = findCard(lecture.path);
-    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Megosztott linkből érkezés: gördülő figyelemfelhívással
+    revealCard(lecture.path, { highlight: true });
   } catch {}
+}
+
+// Biztosítja hogy a felvétel kártyája ki legyen renderelve (ha kell, "tovább"-ot tölt),
+// majd odagörget és opcionálisan kiemeli. A findCard csak a már renderelt kártyákat látja,
+// ezért ha a felvétel a szűrt lista mélyén van, előbb be kell tölteni.
+function revealCard(path, { highlight = false } = {}) {
+  // Ha a felvétel a szűrt listában van, de még nincs renderelve, töltsünk amíg előkerül.
+  const idx = state.filtered.findIndex(l => l.path === path);
+  if (idx >= 0) {
+    let guard = 0;
+    while (dom.grid.children.length <= idx && guard < 200) {
+      const before = dom.grid.children.length;
+      loadMoreLectures();
+      if (dom.grid.children.length === before) break; // nincs több betölthető
+      guard++;
+    }
+  }
+  // A render után görgessünk (requestAnimationFrame: a böngésző már elrendezte a DOM-ot).
+  requestAnimationFrame(() => {
+    const card = findCard(path);
+    if (!card) return;
+    scrollCardIntoView(card);
+    if (highlight) {
+      card.classList.add('just-shared');
+      // a pulzálás után levesszük, hogy újra kiváltható legyen
+      setTimeout(() => card.classList.remove('just-shared'), 2600);
+    }
+  });
+}
+
+// A kártyát úgy görgeti a képbe, hogy a FIX FEJLÉC ne takarja el.
+// A --header-h CSS-változóból olvassa ki a fejléc magasságát (asztali 72px, mobil 116px).
+function scrollCardIntoView(card) {
+  const headerH = parseInt(
+    getComputedStyle(document.documentElement).getPropertyValue('--header-h'),
+    10
+  ) || 72;
+  const margin = 16; // kis levegő a fejléc alatt
+  const rect = card.getBoundingClientRect();
+  const absoluteTop = window.pageYOffset + rect.top;
+  // Középre próbáljuk, de úgy hogy a kártya teteje SOSE csússzon a fejléc alá.
+  const viewport = window.innerHeight;
+  let target = absoluteTop - (viewport - rect.height) / 2;   // középre igazítás
+  const minTop = absoluteTop - headerH - margin;             // felső határ (fejléc alatt)
+  if (target > minTop) target = minTop;                      // ne takarja a fejléc
+  window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
 }
 
 async function shareLecture(lecture, btn) {

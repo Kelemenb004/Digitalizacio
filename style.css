@@ -523,7 +523,21 @@ html:not([data-theme="dark"]) .icon-moon { display: block; }
 
 .lecture-card.is-active {
   border-color: var(--gold);
-  box-shadow: 0 0 0 2px rgba(201, 164, 74, 0.25), var(--shadow);
+  box-shadow: 0 0 0 3px rgba(201, 164, 74, 0.45), var(--shadow);
+  background: linear-gradient(180deg, rgba(201,164,74,0.06), transparent 60%);
+}
+
+/* Megosztott linkből érkezéskor rövid figyelemfelhívó pulzálás */
+@keyframes sharedPulse {
+  0%   { box-shadow: 0 0 0 3px rgba(201,164,74,0.45), var(--shadow); }
+  30%  { box-shadow: 0 0 0 7px rgba(201,164,74,0.55), var(--shadow); }
+  100% { box-shadow: 0 0 0 3px rgba(201,164,74,0.45), var(--shadow); }
+}
+.lecture-card.just-shared {
+  animation: sharedPulse 1.3s ease-in-out 2;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lecture-card.just-shared { animation: none; }
 }
 
 .card-header {
