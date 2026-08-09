@@ -1,0 +1,73 @@
+<!-- ===== NAGY LEJÁTSZÓ NÉZET (Spotify-szerű, felhúzható) ===== -->
+<!-- Az #audioPlayer (mini-sáv) UTÁN, közvetlenül elé/mögé, de az audio elemet NE duplázd. -->
+<!-- Ez egy külön overlay, ami a mini-sáv fölé nyílik. Ugyanazt az #audioElement-et vezérli. -->
+<div class="player-expanded" id="playerExpanded" aria-hidden="true" role="dialog" aria-label="Lejátszó – teljes nézet" aria-modal="false">
+  <div class="pex-inner">
+    <!-- Fejléc: lehúzó fogantyú + lecsukó gomb -->
+    <div class="pex-top">
+      <button class="pex-handle" id="pexCollapse" aria-label="Lejátszó összecsukása" title="Összecsukás">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="26" height="26" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </div>
+
+    <!-- "Borító": a pecsét-logó -->
+    <div class="pex-cover">
+      <img src="images/pecset-logo.png" alt="Kelenföldi Reformátusok – 100 éve Krisztussal" class="pex-cover-img">
+    </div>
+
+    <!-- Cím + meta -->
+    <div class="pex-meta">
+      <span class="pex-category" id="pexCategory"></span>
+      <h2 class="pex-title" id="pexTitle">—</h2>
+      <p class="pex-speaker" id="pexSpeaker"></p>
+      <p class="pex-igehely" id="pexIgehely"></p>
+      <p class="pex-date" id="pexDate"></p>
+    </div>
+
+    <!-- Idővonal -->
+    <div class="pex-timeline">
+      <span class="pex-time" id="pexTimeCurrent">0:00</span>
+      <input type="range" id="pexProgress" class="pex-progress" min="0" max="100" step="0.1" value="0" aria-label="Lejátszási pozíció">
+      <span class="pex-time" id="pexTimeTotal">0:00</span>
+    </div>
+
+    <!-- Fő vezérlők -->
+    <div class="pex-controls">
+      <button class="pex-ctrl" id="pexSkipBack" aria-label="10 másodpercet vissza">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="26" height="26" aria-hidden="true"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+        <span class="pex-ctrl-label">10 mp</span>
+      </button>
+
+      <button class="pex-play" id="pexPlay" aria-label="Lejátszás">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="34" height="34" aria-hidden="true"><polygon points="6,3 21,12 6,21"/></svg>
+      </button>
+
+      <button class="pex-ctrl" id="pexSkipFwd" aria-label="10 másodpercet előre">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="26" height="26" aria-hidden="true"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+        <span class="pex-ctrl-label">10 mp</span>
+      </button>
+    </div>
+
+    <!-- Alsó sor: sebesség, hangerő, megosztás, letöltés -->
+    <div class="pex-extra">
+      <label class="pex-speed">
+        <span class="sr-only">Sebesség</span>
+        <select id="pexSpeed" aria-label="Lejátszási sebesség">
+          <option value="0.75">0.75×</option>
+          <option value="1" selected>1×</option>
+          <option value="1.25">1.25×</option>
+          <option value="1.5">1.5×</option>
+          <option value="2">2×</option>
+        </select>
+      </label>
+
+      <button class="pex-extra-btn" id="pexShare" aria-label="Megosztás" title="Megosztás">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      </button>
+
+      <button class="pex-extra-btn" id="pexDownload" aria-label="Letöltés" title="Letöltés">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+    </div>
+  </div>
+</div>

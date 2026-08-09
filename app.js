@@ -68,6 +68,7 @@ function cacheDOM() {
     playerError:     g('playerError'),
     themeToggle:     g('themeToggle'),
     themeColor:      document.querySelector('meta[name="theme-color"]'),
+    playerInfo:      g('audioPlayer') ? document.querySelector('.player-info') : null,
   };
 }
 
@@ -618,6 +619,7 @@ function startPlaying(lecture) {
 
   history.replaceState(null, '', '#felvetel=' + encodeURIComponent(lecture.path));
   updateCardStates();
+  updatePexView();
 }
 
 function togglePlayPause() {
@@ -641,6 +643,7 @@ function stopPlayer() {
   dom.timeTotal.textContent    = '0:00';
   history.replaceState(null, '', location.pathname + location.search);
   updateCardStates();
+  closePex();
 }
 
 function updateCardStates() {
@@ -685,6 +688,7 @@ function setupAudioListeners() {
   dom.audio.addEventListener('play', () => {
     state.isPlaying = true;
     updateCardStates();
+    updatePexPlayIcon();
     clearPlayerError();
   });
 
@@ -695,6 +699,7 @@ function setupAudioListeners() {
   dom.audio.addEventListener('pause', () => {
     state.isPlaying = false;
     updateCardStates();
+    updatePexPlayIcon();
   });
 
   dom.audio.addEventListener('ended', () => {
@@ -710,10 +715,13 @@ function setupAudioListeners() {
     dom.progressBar.value = pct;
     updateProgressBarStyle(pct);
     dom.timeCurrent.textContent = formatTime(dom.audio.currentTime);
+    if (dom.pexProgress) dom.pexProgress.value = pct;
+    if (dom.pexTimeCurrent) dom.pexTimeCurrent.textContent = formatTime(dom.audio.currentTime);
   });
 
   dom.audio.addEventListener('loadedmetadata', () => {
     dom.timeTotal.textContent = formatTime(dom.audio.duration);
+    if (dom.pexTimeTotal) dom.pexTimeTotal.textContent = formatTime(dom.audio.duration);
   });
 
   dom.audio.addEventListener('error', () => {
@@ -724,9 +732,168 @@ function setupAudioListeners() {
   });
 }
 
+/* ===== NAGY LEJÁTSZÓ NÉZET – logika ===== */
+// Elv: NINCS külön lejátszó. A nagy nézet ugyanazt az #audioElement-et és state.current-et
+// használja, mint a mini-sáv. A nagy nézet vezérlői ugyanazokat a függvényeket hívják.
+// Csak a MEGJELENÍTÉST kell szinkronban tartani (updatePexView).
+
+function cachePexDom() {
+  dom.pex            = document.getElementById('playerExpanded');
+  dom.pexCollapse    = document.getElementById('pexCollapse');
+  dom.pexCategory    = document.getElementById('pexCategory');
+  dom.pexTitle       = document.getElementById('pexTitle');
+  dom.pexSpeaker     = document.getElementById('pexSpeaker');
+  dom.pexIgehely     = document.getElementById('pexIgehely');
+  dom.pexDate        = document.getElementById('pexDate');
+  dom.pexProgress    = document.getElementById('pexProgress');
+  dom.pexTimeCurrent = document.getElementById('pexTimeCurrent');
+  dom.pexTimeTotal   = document.getElementById('pexTimeTotal');
+  dom.pexPlay        = document.getElementById('pexPlay');
+  dom.pexSkipBack    = document.getElementById('pexSkipBack');
+  dom.pexSkipFwd     = document.getElementById('pexSkipFwd');
+  dom.pexSpeed       = document.getElementById('pexSpeed');
+  dom.pexShare       = document.getElementById('pexShare');
+  dom.pexDownload    = document.getElementById('pexDownload');
+}
+
+function openPex() {
+  if (!dom.pex || !state.current) return;
+  updatePexView();
+  dom.pex.classList.add('open');
+  dom.pex.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('pex-open');
+}
+function closePex() {
+  if (!dom.pex) return;
+  dom.pex.classList.remove('open');
+  dom.pex.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('pex-open');
+}
+
+// A nagy nézet tartalmának feltöltése az aktuális felvételből
+function updatePexView() {
+  const l = state.current;
+  if (!l || !dom.pex) return;
+
+  if (dom.pexCategory) {
+    dom.pexCategory.textContent = l.kategoria || '';
+    dom.pexCategory.style.display = l.kategoria ? '' : 'none';
+  }
+  if (dom.pexTitle)   dom.pexTitle.textContent = l.cim || l.eloado || '—';
+  if (dom.pexSpeaker) {
+    dom.pexSpeaker.innerHTML = l.eloado
+      ? `<a href="/igehirdeto/${slugify(l.eloado)}/">${escHtml(l.eloado)}</a>`
+      : 'Ismeretlen előadó';
+  }
+  if (dom.pexIgehely) {
+    const parts = [];
+    if (l.lectio) parts.push(`<span class="igehely-label">Lectió:</span> ${renderIgehely(l.lectio)}`);
+    if (l.textus) parts.push(`<span class="igehely-label">Textus:</span> ${renderIgehely(l.textus)}`);
+    dom.pexIgehely.innerHTML = parts.join('<br>');
+    dom.pexIgehely.style.display = parts.length ? '' : 'none';
+  }
+  if (dom.pexDate) {
+    const dp = [];
+    if (l.datum) dp.push(formatDate(l.datum));
+    if (l.ido)   dp.push(l.ido);
+    dom.pexDate.textContent = dp.join(' · ');
+  }
+  updatePexPlayIcon();
+}
+
+function updatePexPlayIcon() {
+  if (!dom.pexPlay) return;
+  dom.pexPlay.classList.toggle('is-playing', state.isPlaying);
+  dom.pexPlay.setAttribute('aria-label', state.isPlaying ? 'Szünet' : 'Lejátszás');
+  dom.pexPlay.innerHTML = state.isPlaying
+    ? '<svg viewBox="0 0 24 24" fill="currentColor" width="34" height="34" aria-hidden="true"><rect x="5" y="3" width="5" height="18" rx="1.2"/><rect x="14" y="3" width="5" height="18" rx="1.2"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="currentColor" width="34" height="34" aria-hidden="true"><polygon points="6,3 21,12 6,21"/></svg>';
+}
+
+function setupExpandedPlayer() {
+  cachePexDom();
+  if (!dom.pex) return;
+
+  // --- Nyitás: (1) a mini-sáv info-részére kattintva, (2) a felfelé-nyíl gombbal ---
+  const expandBtn = document.getElementById('playerExpandBtn');
+  if (expandBtn) expandBtn.addEventListener('click', openPex);
+  if (dom.playerInfo) {
+    dom.playerInfo.classList.add('is-expandable');
+    dom.playerInfo.addEventListener('click', openPex);
+  }
+
+  // --- Zárás: a lehúzó fogantyú/nyíl ---
+  if (dom.pexCollapse) dom.pexCollapse.addEventListener('click', closePex);
+
+  // --- Esc zár ---
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && dom.pex.classList.contains('open')) closePex();
+  });
+
+  // --- (3) Húzás-gesztusok ---
+  // a) A MINI-sávon FELFELÉ húzás -> nyit
+  attachSwipe(dom.player, {
+    onUp: () => { if (!dom.pex.classList.contains('open')) openPex(); }
+  });
+  // b) A NAGY nézeten LEFELÉ húzás -> zár (csak ha a tetejénél vagyunk, hogy ne ütközzön a görgetéssel)
+  attachSwipe(dom.pex, {
+    onDown: () => { if (dom.pex.scrollTop <= 4) closePex(); }
+  });
+
+  // --- A nagy nézet vezérlői ugyanazokat a függvényeket hívják, mint a mini-sáv ---
+  if (dom.pexPlay)     dom.pexPlay.addEventListener('click', togglePlayPause);
+  if (dom.pexSkipBack) dom.pexSkipBack.addEventListener('click', () => {
+    dom.audio.currentTime = Math.max(0, dom.audio.currentTime - CONFIG.SKIP_SECONDS);
+  });
+  if (dom.pexSkipFwd)  dom.pexSkipFwd.addEventListener('click', () => {
+    if (dom.audio.duration) dom.audio.currentTime = Math.min(dom.audio.duration, dom.audio.currentTime + CONFIG.SKIP_SECONDS);
+  });
+  if (dom.pexProgress) dom.pexProgress.addEventListener('input', () => {
+    if (!dom.audio.duration) return;
+    dom.audio.currentTime = (dom.pexProgress.value / 100) * dom.audio.duration;
+  });
+  if (dom.pexSpeed) dom.pexSpeed.addEventListener('change', () => {
+    dom.audio.playbackRate = parseFloat(dom.pexSpeed.value);
+    if (dom.speedSelect) dom.speedSelect.value = dom.pexSpeed.value; // szinkron a mini-sávval
+  });
+  if (dom.pexShare)    dom.pexShare.addEventListener('click', () => {
+    if (state.current) shareLecture(state.current, dom.pexShare);
+  });
+  if (dom.pexDownload) dom.pexDownload.addEventListener('click', () => {
+    if (state.current) downloadLecture(state.current);
+  });
+}
+
+// Egyszerű swipe-detektor (touch). onUp/onDown callbackek.
+function attachSwipe(el, { onUp, onDown } = {}) {
+  if (!el) return;
+  let startY = null, startX = null, moved = false;
+  el.addEventListener('touchstart', e => {
+    startY = e.touches[0].clientY; startX = e.touches[0].clientX; moved = false;
+  }, { passive: true });
+  el.addEventListener('touchmove', e => {
+    if (startY === null) return;
+    const dy = e.touches[0].clientY - startY;
+    const dx = e.touches[0].clientX - startX;
+    if (Math.abs(dy) > 8 || Math.abs(dx) > 8) moved = true;
+  }, { passive: true });
+  el.addEventListener('touchend', e => {
+    if (startY === null) return;
+    const dy = e.changedTouches[0].clientY - startY;
+    const dx = e.changedTouches[0].clientX - startX;
+    // függőleges gesztus, nem túl vízszintes, elég nagy elmozdulás
+    if (moved && Math.abs(dy) > 55 && Math.abs(dy) > Math.abs(dx) * 1.5) {
+      if (dy < 0 && onUp)   onUp();
+      if (dy > 0 && onDown) onDown();
+    }
+    startY = startX = null;
+  }, { passive: true });
+}
+
 /* ---------- Esemény-figyelők ---------- */
 function setupEventListeners() {
   setupAudioListeners();
+  setupExpandedPlayer();
 
   dom.playBtn.addEventListener('click', togglePlayPause);
 

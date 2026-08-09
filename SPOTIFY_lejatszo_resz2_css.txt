@@ -1,0 +1,191 @@
+/* ===== NAGY LEJÁTSZÓ NÉZET (Spotify-szerű, felhúzható) ===== */
+.player-expanded {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 100dvh;               /* teljes képernyő (dvh: mobil címsor-barát) */
+  z-index: 300;                 /* a mini-sáv (200) fölött */
+  background: linear-gradient(180deg, var(--navy) 0%, var(--navy-dark) 100%);
+  transform: translateY(100%);  /* alapból lent, kívül a képernyőn */
+  transition: transform 0.34s cubic-bezier(0.22, 0.61, 0.36, 1);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.player-expanded.open {
+  transform: translateY(0);     /* felnyitva */
+}
+.pex-inner {
+  max-width: 640px;
+  margin: 0 auto;
+  min-height: 100%;
+  padding: 0.5rem 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Fejléc: lehúzó fogantyú */
+.pex-top {
+  display: flex;
+  justify-content: center;
+  padding: 0.35rem 0 0.15rem;
+  position: sticky; top: 0;
+}
+.pex-handle {
+  background: none; border: none; cursor: pointer;
+  color: var(--gold-light);
+  padding: 0.5rem 2rem;
+  display: flex; justify-content: center;
+  border-radius: 999px;
+  transition: color var(--transition), background var(--transition);
+}
+.pex-handle::before {
+  /* a "húzható" jelző csík a nyíl fölött */
+  content: ""; position: absolute; top: 0.35rem;
+  width: 42px; height: 4px; border-radius: 999px;
+  background: rgba(255,255,255,0.25);
+}
+.pex-handle:hover { color: var(--gold); background: rgba(255,255,255,0.05); }
+
+/* Borító (pecsét-logó) */
+.pex-cover {
+  display: flex; justify-content: center; align-items: center;
+  padding: 0.5rem 0;
+}
+.pex-cover-img {
+  width: min(58vw, 260px);
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 6px rgba(201,164,74,0.15);
+  background: #fff;
+}
+
+/* Cím + meta */
+.pex-meta { text-align: center; }
+.pex-category {
+  display: inline-block;
+  font-family: var(--font-ui);
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--navy-dark);
+  background: var(--gold-light);
+  padding: 0.2rem 0.7rem; border-radius: 999px;
+  margin-bottom: 0.6rem;
+}
+.pex-title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem; line-height: 1.25; font-weight: 700;
+  color: var(--text-invert);
+  margin: 0 0 0.4rem;
+}
+.pex-speaker {
+  font-family: var(--font-ui);
+  font-size: 1rem; color: var(--gold-light);
+  margin: 0 0 0.5rem;
+}
+.pex-speaker a { color: var(--gold-light); text-decoration: none; border-bottom: 1px solid rgba(224,188,114,0.4); }
+.pex-speaker a:hover { color: var(--gold); }
+.pex-igehely {
+  font-family: var(--font-body);
+  font-size: 0.95rem; color: rgba(255,255,255,0.85);
+  margin: 0 0 0.3rem;
+}
+.pex-igehely a { color: var(--gold-light); text-decoration: none; border-bottom: 1px dotted rgba(224,188,114,0.5); }
+.pex-igehely a:hover { color: var(--gold); }
+.pex-igehely .igehely-label { color: rgba(255,255,255,0.6); font-style: italic; }
+.pex-date {
+  font-family: var(--font-ui);
+  font-size: 0.85rem; color: rgba(255,255,255,0.6);
+  margin: 0;
+}
+
+/* Idővonal */
+.pex-timeline {
+  display: flex; align-items: center; gap: 0.75rem;
+  margin-top: auto;
+}
+.pex-time {
+  font-family: var(--font-ui); font-size: 0.78rem;
+  color: rgba(255,255,255,0.7); min-width: 3ch; text-align: center;
+}
+.pex-progress {
+  flex: 1; height: 6px; cursor: pointer;
+  -webkit-appearance: none; appearance: none;
+  background: rgba(255,255,255,0.2); border-radius: 999px;
+}
+.pex-progress::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--gold); cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.pex-progress::-moz-range-thumb {
+  width: 16px; height: 16px; border: none; border-radius: 50%;
+  background: var(--gold); cursor: pointer;
+}
+
+/* Fő vezérlők */
+.pex-controls {
+  display: flex; align-items: center; justify-content: center; gap: 2rem;
+}
+.pex-ctrl {
+  background: none; border: none; cursor: pointer;
+  color: rgba(255,255,255,0.85);
+  display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
+  transition: color var(--transition), transform var(--transition);
+}
+.pex-ctrl:hover { color: #fff; transform: scale(1.05); }
+.pex-ctrl-label { font-family: var(--font-ui); font-size: 0.62rem; opacity: 0.7; }
+.pex-play {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--gold); border: none; cursor: pointer;
+  color: var(--navy-dark);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 20px rgba(201,164,74,0.4);
+  transition: transform var(--transition), background var(--transition);
+}
+.pex-play:hover { transform: scale(1.06); background: var(--gold-light); }
+.pex-play svg { margin-left: 2px; }  /* a play-háromszög optikai középre */
+.pex-play.is-playing svg { margin-left: 0; }
+
+/* Alsó extra sor */
+.pex-extra {
+  display: flex; align-items: center; justify-content: center; gap: 1.5rem;
+  padding-top: 0.5rem;
+}
+.pex-speed select {
+  font-family: var(--font-ui); font-size: 0.85rem;
+  background: rgba(255,255,255,0.1); color: var(--text-invert);
+  border: 1px solid rgba(255,255,255,0.2); border-radius: 6px;
+  padding: 0.35rem 0.5rem; cursor: pointer;
+}
+.pex-extra-btn {
+  background: none; border: none; cursor: pointer;
+  color: rgba(255,255,255,0.8);
+  padding: 0.4rem; border-radius: 8px;
+  transition: color var(--transition), background var(--transition);
+}
+.pex-extra-btn:hover { color: #fff; background: rgba(255,255,255,0.08); }
+
+/* A mini-sávon a felfelé-nyíl gomb + a kattintható terület jelzése */
+.player-expand-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--gold-light); padding: 0.4rem;
+  display: flex; align-items: center;
+  transition: color var(--transition), transform var(--transition);
+}
+.player-expand-btn:hover { color: var(--gold); transform: translateY(-2px); }
+.player-info.is-expandable { cursor: pointer; }
+
+/* Ne görgessön a háttér, amíg a nagy nézet nyitva van */
+body.pex-open { overflow: hidden; }
+
+/* Mozgáscsökkentés */
+@media (prefers-reduced-motion: reduce) {
+  .player-expanded { transition: none; }
+}
+
+/* Kisebb képernyőkre finomítás */
+@media (max-width: 420px) {
+  .pex-title { font-size: 1.25rem; }
+  .pex-cover-img { width: min(62vw, 220px); }
+  .pex-controls { gap: 1.5rem; }
+}
