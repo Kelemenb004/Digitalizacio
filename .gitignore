@@ -20,3 +20,8 @@ images/IMG-d35c9968e856b7312d58b409f794cd4a-V.jpg
 *.bak_*
 hianyzo_2013_elott.csv
 datumhiba_fajlok.csv
+
+# A 207-es hiánypótlás egyszeri segédfájljai (nem az oldal részei)
+uj_207_rekord.json
+r2_feltoltes.sh
+r2_feltoltes_lista.json
