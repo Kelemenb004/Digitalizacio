@@ -46,6 +46,8 @@ def kategoria_cls(kat):
     if "konfirmac" in k: return "kat-konfirmacio"
     if "bibliakor" in k: return "kat-bibliakor"
     if "imahet" in k or "ima het" in k: return "kat-imaheti"
+    if "tortenelmi" in k: return "kat-tortenelmi"
+    if "zenei" in k: return "kat-zenei"
     return "kat-alap"
 
 def audio_url(path):

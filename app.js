@@ -1104,6 +1104,8 @@ function kategoriaCls(kat) {
   if (k.includes('konfirmac'))       return 'kat-konfirmacio';
   if (k.includes('bibliakori') || k.includes('bibliakor')) return 'kat-bibliakor';
   if (k.includes('imaheti') || k.includes('ima het')) return 'kat-imaheti';
+  if (k.includes('tortenelmi'))      return 'kat-tortenelmi';
+  if (k.includes('zenei'))           return 'kat-zenei';
   return 'kat-alap';
 }
 
