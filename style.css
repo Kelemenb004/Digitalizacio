@@ -1854,3 +1854,146 @@ body.pex-open { overflow: hidden; }
   .pex-controls { gap: 1.5rem; }
 }
 
+
+/* =====================================================================
+   Videó-beágyazás (közös: főoldali filmsáv + Videók oldal) – videok.js
+   Kattintásig csak a borítókép látszik, a YouTube-ot nem tölti be.
+   ===================================================================== */
+.video-embed {
+  position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000;
+}
+.video-embed iframe,
+.video-embed video {
+  position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
+}
+.video-embed video { background: #000; object-fit: contain; }
+.video-hiba {
+  position: absolute; inset: 0; margin: 0; padding: 1rem;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  color: rgba(255,255,255,0.85); font-family: var(--font-ui); font-size: 0.9rem;
+}
+.video-poster {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  border: 0; padding: 0; margin: 0; cursor: pointer; display: block;
+  background-size: cover; background-position: center; background-color: #000;
+}
+.video-poster::before {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.35));
+  transition: background 0.15s ease;
+}
+.video-poster:hover::before { background: linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.2)); }
+.video-poster:focus-visible { outline: 3px solid #fff; outline-offset: -3px; }
+.video-play {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 68px; height: 48px; border-radius: 14px;
+  background: rgba(196,48,43,0.92); display: flex; align-items: center; justify-content: center;
+  transition: transform 0.15s ease, background 0.15s ease; pointer-events: none;
+}
+.video-poster:hover .video-play { transform: translate(-50%,-50%) scale(1.08); background: #c4302b; }
+.video-play svg { width: 26px; height: 26px; fill: #fff; margin-left: 3px; }
+
+/* Arany play gomb – kiemelt (ünnepi) filmek */
+.video-play.video-play--arany {
+  width: 66px; height: 66px; border-radius: 50%;
+  background: rgba(201,164,74,0.94);
+  box-shadow: 0 0 0 6px rgba(201,164,74,0.25), 0 6px 20px rgba(0,0,0,0.45);
+}
+.video-poster:hover .video-play.video-play--arany { background: var(--gold-light); }
+.video-play--arany svg { width: 28px; height: 28px; fill: var(--navy-dark); margin-left: 4px; }
+
+/* =====================================================================
+   Főoldal – ünnepi filmsáv (videok.json "kiemelt": true)
+   ===================================================================== */
+.filmek-section {
+  max-width: 1200px;
+  margin: 1.5rem auto 0;
+  padding: 0 1.5rem;
+}
+.filmek-section.filmek-szurt { display: none; }   /* keresés/szűrés közben (app.js) */
+.filmek-inner {
+  position: relative;
+  background: linear-gradient(160deg, var(--navy) 0%, var(--navy-dark) 100%);
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 2.25rem 2.25rem 1.75rem;
+  color: #fff;
+}
+.filmek-inner::before {            /* vékony belső arany keret */
+  content: ""; position: absolute; inset: 7px;
+  border: 1px solid rgba(201,164,74,0.22);
+  border-radius: 5px; pointer-events: none;
+}
+[data-theme="dark"] .filmek-inner {
+  background: linear-gradient(160deg, #1E3264 0%, #121F3D 100%);
+  border-color: rgba(201,164,74,0.4);
+}
+.filmek-head { text-align: center; margin-bottom: 1.9rem; }
+.filmek-eyebrow {
+  display: flex; align-items: center; justify-content: center; gap: 0.9rem;
+  font-family: var(--font-ui); font-size: 0.75rem; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--gold-light); margin: 0 0 0.65rem;
+}
+.filmek-eyebrow::before,
+.filmek-eyebrow::after {
+  content: ""; flex: 0 0 2.75rem; height: 1px; background: var(--gold); opacity: 0.75;
+}
+.filmek-title {
+  font-family: var(--font-serif); font-style: italic; font-weight: 400;
+  font-size: clamp(1.55rem, 3vw, 2.15rem); line-height: 1.25;
+  color: #fff; margin: 0 0 0.55rem;
+}
+.filmek-lead {
+  font-family: var(--font-body); font-size: 1.12rem; line-height: 1.5;
+  color: rgba(245,240,232,0.82); margin: 0 auto; max-width: 40rem;
+}
+.filmek-grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem; align-items: start;
+}
+.filmek-grid--egy { grid-template-columns: minmax(0, 720px); justify-content: center; }
+.film-card { margin: 0; min-width: 0; }
+.film-card .video-embed {
+  border-radius: var(--radius);
+  overflow: hidden;
+  outline: 1px solid rgba(201,164,74,0.55);   /* "paszpartu" az arany kerettel */
+  outline-offset: 5px;
+  box-shadow: 0 8px 26px rgba(0,0,0,0.45);
+}
+.film-meta { padding: 1.2rem 0.15rem 0; }
+.film-date {
+  font-family: var(--font-ui); font-size: 0.78rem; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--gold-light); margin: 0 0 0.35rem;
+}
+.film-title {
+  font-family: var(--font-serif); font-size: 1.25rem; font-weight: 600; line-height: 1.3;
+  color: #fff; margin: 0 0 0.4rem;
+}
+.film-desc {
+  font-family: var(--font-body); font-size: 1.05rem; line-height: 1.5;
+  color: rgba(245,240,232,0.82); margin: 0;
+}
+.filmek-inner a.filmek-more {
+  display: table; margin: 1.75rem auto 0;
+  font-family: var(--font-ui); font-size: 0.9rem;
+  color: var(--gold-light); text-decoration: none;
+  border-bottom: 1px dotted rgba(224,188,114,0.6);
+  transition: color var(--transition), border-color var(--transition);
+}
+.filmek-inner a.filmek-more:hover,
+.filmek-inner a.filmek-more:focus-visible { color: #fff; border-bottom-color: #fff; }
+
+@media (max-width: 768px) {
+  .filmek-section { padding: 0 1rem; }
+  .filmek-inner { padding: 1.6rem 1.1rem 1.4rem; }
+  .filmek-grid { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; }
+  .filmek-eyebrow { gap: 0.6rem; letter-spacing: 0.14em; }
+  .filmek-eyebrow::before,
+  .filmek-eyebrow::after { flex-basis: 1.5rem; }
+}
+@media print {
+  .filmek-section { display: none; }
+}

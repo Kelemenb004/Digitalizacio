@@ -29,3 +29,14 @@ r2_feltoltes_lista.json
 # Archivalt segedfajlok / cache (nem az oldal resze)
 _archiv/
 __pycache__/
+
+# Videó-forrásfájlok (a filmek YouTube-ra kerülnek, a repóba soha – GitHub-limit: 100 MB/fájl)
+*.mp4
+*.MP4
+*.mov
+*.MOV
+*.mkv
+*.avi
+*.m4v
+*.mpg
+*.wmv

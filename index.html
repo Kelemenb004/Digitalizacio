@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self' https://pub-07c808b19cf0458187fdb14c1d5d0129.r2.dev; connect-src 'self' https://pub-07c808b19cf0458187fdb14c1d5d0129.r2.dev; object-src 'none'; base-uri 'self'; form-action 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://i.ytimg.com; media-src 'self' https://pub-07c808b19cf0458187fdb14c1d5d0129.r2.dev; connect-src 'self' https://pub-07c808b19cf0458187fdb14c1d5d0129.r2.dev; frame-src https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'none';">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="description" content="A Budapest-Kelenföldi Református Egyházközség digitalizált igehirdetéseinek, prédikációinak és bibliaóráinak kereshető hangarchívuma. Több mint 2600 felvétel, több mint 1900 óra hanganyag, több mint 100 igehirdetőtől – ingyen hallgatható és letölthető.">
   <meta name="theme-color" content="#1B2E5C">
@@ -139,6 +139,19 @@
         <blockquote class="hero-quote">„Hű az Isten, ki elhívott titeket az ő Fiával, a mi Urunk Jézus Krisztussal való közösségre."</blockquote>
         <cite class="hero-cite"><a href="https://szentiras.eu/RUF/1Kor1,9" target="_blank" rel="noopener" class="hero-cite-link">1 Korinthus 1,9</a></cite>
       </div>
+    </div>
+  </section>
+
+  <!-- ===== Ünnepi filmsáv – a videok.json "kiemelt": true tételei (videok.js) ===== -->
+  <section class="filmek-section hidden" id="filmekSection" aria-labelledby="filmekTitle">
+    <div class="filmek-inner">
+      <div class="filmek-head">
+        <p class="filmek-eyebrow">Történelmi filmfelvételek</p>
+        <h2 class="filmek-title" id="filmekTitle">Sebestyén Andor szolgálatának idejéből</h2>
+        <p class="filmek-lead">Digitalizált filmfelvételek a gyülekezet életéből · 1926–1954</p>
+      </div>
+      <div class="filmek-grid" id="filmekGrid"></div>
+      <a class="filmek-more" href="/videok/">Az összes videófelvétel →</a>
     </div>
   </section>
 
@@ -437,5 +450,6 @@
 
   <script src="config.js"></script>
   <script src="app.js"></script>
+  <script src="videok.js"></script>
 </body>
 </html>

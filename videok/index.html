@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://i.ytimg.com; media-src 'self' https://pub-07c808b19cf0458187fdb14c1d5d0129.r2.dev; frame-src https://www.youtube-nocookie.com; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none';">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta name="description" content="Videófelvételek a Budapest-Kelenföldi Református Egyházközség történetéből – beiktatás, evangelizációk, ünnepi alkalmak. A friss istentiszteletek a gyülekezet YouTube-csatornáján érhetők el.">
+  <meta name="description" content="Videófelvételek a Budapest-Kelenföldi Református Egyházközség történetéből – filmfelvételek Sebestyén Andor szolgálati idejéből (1926–1954), beiktatás, evangelizációk, ünnepi alkalmak. A friss istentiszteletek a gyülekezet YouTube-csatornáján érhetők el.">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#1B2E5C">
   <link rel="canonical" href="https://kelenref100.hu/videok/">
@@ -54,33 +54,6 @@
       border-radius: 12px; overflow: hidden;
       background: var(--surface-1, rgba(127,127,127,0.04));
     }
-    .video-embed {
-      position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000;
-    }
-    .video-embed iframe {
-      position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
-    }
-    /* Poszter (borítókép + play gomb) – kattintásig ez látszik, nem tölt YouTube-ot */
-    .video-poster {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      border: 0; padding: 0; margin: 0; cursor: pointer; display: block;
-      background-size: cover; background-position: center; background-color: #000;
-    }
-    .video-poster::before {
-      content: ""; position: absolute; inset: 0;
-      background: linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.35));
-      transition: background 0.15s ease;
-    }
-    .video-poster:hover::before { background: linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.2)); }
-    .video-poster:focus-visible { outline: 3px solid #fff; outline-offset: -3px; }
-    .video-play {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-      width: 68px; height: 48px; border-radius: 14px;
-      background: rgba(196,48,43,0.92); display: flex; align-items: center; justify-content: center;
-      transition: transform 0.15s ease, background 0.15s ease; pointer-events: none;
-    }
-    .video-poster:hover .video-play { transform: translate(-50%,-50%) scale(1.08); background: #c4302b; }
-    .video-play svg { width: 26px; height: 26px; fill: #fff; margin-left: 3px; }
     .video-meta { padding: 1rem 1.15rem 1.25rem; }
     .video-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin: 0 0 0.4rem; line-height: 1.35; }
     .video-sub { font-size: 0.9rem; opacity: 0.85; margin: 0; }
@@ -90,6 +63,21 @@
       background: var(--accent-soft, rgba(27,46,92,0.12)); color: var(--accent, #1B2E5C);
     }
     [data-theme="dark"] .video-badge { background: rgba(255,255,255,0.1); color: inherit; }
+    /* A lejátszó (video-embed/poster/play) stílusai a /style.css-ben vannak (közös a főoldallal). */
+
+    /* Kiemelt (ünnepi) filmek blokkja a lista elején */
+    .videok-szekcio-cim {
+      font-family: 'Playfair Display', serif; font-size: 1.35rem; font-weight: 600;
+      color: var(--navy); margin: 0 0 1.25rem;
+    }
+    [data-theme="dark"] .videok-szekcio-cim { color: var(--gold-light); }
+    .videok-kiemelt { margin: 0 0 2.5rem; }
+    .video-card--kiemelt {
+      border-color: var(--gold-border);
+      box-shadow: 0 0 0 1px var(--gold-border), var(--shadow-sm);
+    }
+    .video-card--kiemelt .video-badge { background: var(--gold-pale); color: #7A5B12; }
+    [data-theme="dark"] .video-card--kiemelt .video-badge { background: rgba(201,164,74,0.18); color: var(--gold-light); }
   </style>
 </head>
 <body>
@@ -113,9 +101,14 @@
       <h1 class="legal-title">Videófelvételek</h1>
 
       <div class="videok-intro">
-        <p>Néhány kiemelt videófelvétel a gyülekezet történetéből – lelkipásztori beiktatás,
-        régi evangelizációk és ünnepi alkalmak.</p>
+        <p>Videófelvételek a gyülekezet történetéből – Sebestyén Andor szolgálati idejének
+        filmfelvételeitől a lelkipásztori beiktatásig, régi evangelizációk és ünnepi alkalmak.</p>
       </div>
+
+      <section class="videok-kiemelt" id="kiemeltBlokk" aria-labelledby="kiemeltCim" hidden>
+        <h2 class="videok-szekcio-cim" id="kiemeltCim">Történelmi filmfelvételek – Sebestyén Andor szolgálatának idejéből (1926–1954)</h2>
+        <div class="videok-grid" id="kiemeltGrid"></div>
+      </section>
 
       <div class="videok-channel">
         <div class="videok-channel-text">
@@ -128,6 +121,7 @@
         </a>
       </div>
 
+      <h2 class="videok-szekcio-cim" id="tobbiCim" hidden>További videófelvételek</h2>
       <div class="videok-grid" id="videokGrid"></div>
     </div>
   </main>
@@ -154,84 +148,7 @@
     </div>
   </footer>
 
-  <script>
-    const HONAP = ['január','február','március','április','május','június','július','augusztus','szeptember','október','november','december'];
-    function datumSzoveg(d) {
-      if (!d) return '';
-      if (/^\d{4}$/.test(d)) return d;
-      const m = d.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      if (m) return `${m[1]}. ${HONAP[+m[2]-1]} ${+m[3]}.`;
-      return d;
-    }
-    function esc(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-    // Egy videó tényleges betöltése: a poszter helyére kerül az iframe (autoplay).
-    // A már lejátszó videót előbb visszaállítjuk poszterre -> egyszerre csak egy szól.
-    let aktivEmbed = null;
-    function betolt(embedEl, id, cim) {
-      if (aktivEmbed && aktivEmbed !== embedEl) visszaPoszter(aktivEmbed);
-      const iframe = document.createElement('iframe');
-      iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
-      iframe.title = cim;
-      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-      iframe.setAttribute('allowfullscreen', '');
-      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
-      embedEl.innerHTML = '';
-      embedEl.appendChild(iframe);
-      aktivEmbed = embedEl;
-    }
-    function visszaPoszter(embedEl) {
-      const btn = embedEl._poszter;
-      if (btn) { embedEl.innerHTML = ''; embedEl.appendChild(btn); }
-      if (aktivEmbed === embedEl) aktivEmbed = null;
-    }
-
-    fetch('/videok.json')
-      .then(r => r.json())
-      .then(videok => {
-        const grid = document.getElementById('videokGrid');
-        videok.forEach(v => {
-          const card = document.createElement('article');
-          card.className = 'video-card';
-
-          const embed = document.createElement('div');
-          embed.className = 'video-embed';
-
-          const poszter = document.createElement('button');
-          poszter.className = 'video-poster';
-          poszter.type = 'button';
-          poszter.setAttribute('aria-label', v.cim + ' – lejátszás');
-          // A borítókép a YouTube-ról (i.ytimg.com, a CSP engedi). hqdefault mindig létezik.
-          poszter.style.backgroundImage = `url('https://i.ytimg.com/vi/${esc(v.id)}/hqdefault.jpg')`;
-          poszter.innerHTML = '<span class="video-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>';
-          poszter.addEventListener('click', () => betolt(embed, v.id, v.cim));
-
-          embed._poszter = poszter;
-          embed.appendChild(poszter);
-
-          const alrészek = [];
-          const d = datumSzoveg(v.datum);
-          if (v.megjegyzes) alrészek.push(esc(v.megjegyzes));
-          if (d) alrészek.push(d);
-          if (v.eloado) alrészek.push(esc(v.eloado));
-          const sub = alrészek.join(' · ');
-
-          const meta = document.createElement('div');
-          meta.className = 'video-meta';
-          meta.innerHTML = `
-            ${v.alkalom ? `<span class="video-badge">${esc(v.alkalom)}</span>` : ''}
-            <h2 class="video-title">${esc(v.cim)}</h2>
-            ${sub ? `<p class="video-sub">${sub}</p>` : ''}`;
-
-          card.appendChild(embed);
-          card.appendChild(meta);
-          grid.appendChild(card);
-        });
-      })
-      .catch(() => {
-        document.getElementById('videokGrid').innerHTML =
-          '<p style="opacity:.8">A videók jelenleg nem tölthetők be. Kérlek, próbáld újra később.</p>';
-      });
-  </script>
+  <script src="/config.js"></script>
+  <script src="/videok.js"></script>
 </body>
 </html>

@@ -39,6 +39,19 @@ Az audio nem a repóban van, hanem Cloudflare R2-n.
 - SEO: sitemap.xml (főoldal + igehirdetok/ + impresszum/ + előadó-oldalak, a
   generátor írja), meta tagek, JSON-LD, Google Search Console. Megszűnt
   előadó-oldal helyére a generátor átirányító oldalt tesz (`ATIRANYITAS`).
+- Videók: `videok.json`, kétféle tétel: YouTube (`id`) vagy saját videó az
+  R2-ről (`tipus: "video"`, `src: "filmek/…mp4"`). Közös mezők: `cim, alkalom,
+  datum, eloado, megjegyzes`, opcionális `hossz_sec`, `kiemelt: true`,
+  `keparany`, `poszter`. Megjelenítés: `videok.js` (közös) — a `/videok/` oldal
+  listája, és a `kiemelt: true` tételek a főoldalon is, a nyitókép alatti ünnepi
+  filmsávban (`#filmekSection`; keresés/szűrés közben rejtve). Kattintásig nem
+  tölt semmit; egyszerre egy videó szól, a hanglejátszóval kölcsönösen
+  megállítják egymást. A saját videóknál nincs letöltés gomb és jobb klikkes
+  mentés (`controlslist="nodownload"`) — szándékosan NEM úgy, mint a hanganyagok.
+- A két Sebestyén Andor-kori némafilm (R2: `filmek/sebestyen-andor-1.mp4`, `-2.mp4`)
+  az eredeti digitalizált fájl VÁLTOZATLANUL — a felhasználó kérésére a videókat
+  nem kódoljuk át, nem vágjuk, nem javítjuk. Feltöltés: `_forrasok/r2_filmek_feltoltes.sh`.
+  A forrás mp4-ek a gyökérben vannak, a `.gitignore` kizárja őket (GitHub: max. 100 MB/fájl).
 - Fejlesztés: VS Code + Claude Code + Filesystem MCP, commit GitHub Desktoppal.
 
 ## Konvenciók / szabályok

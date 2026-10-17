@@ -26,6 +26,21 @@
   (`Kelenref_FINAL.xlsx`) alapján állt össze egyszeri, kézi/Claude-asszisztált
   folyamattal — ez nem újrafuttatható parancs (ELLENTÉTBEN az
   igehirdeto_generator.py-val, ami az).
+- **Videók:** a `videok.json` (kézzel szerkesztett) listát a közös `videok.js`
+  jeleníti meg: a `/videok/` oldalon (kiemeltek elöl, külön blokkban) és a
+  főoldalon a `kiemelt: true` tételeket a nyitókép alatti ünnepi filmsávban.
+  Kétféle tétel: YouTube (`id`, youtube-nocookie iframe, csak kattintásra) és
+  saját videó az R2-ről (`tipus: "video"`, `src: "filmek/…mp4"`, `<video>` elem
+  `controlslist="nodownload"`-dal, jobb klikk tiltva; az R2-cím a `config.js`-ből,
+  ezért a Videók oldal is betölti a `config.js`-t). Opcionális mezők: `kiemelt`,
+  `hossz_sec`, `keparany` (pl. `"4:3"`), `poszter` (`/images/...`).
+  2026-10: a két Sebestyén Andor-kori (1926–1954) némafilm, az eredeti fájl
+  változatlanul az R2 `filmek/` mappájában (forrás: Illés Barna digitalizálása;
+  a 02-es, német film nem került fel). Teljes letöltés-védelem a weben nincs —
+  ez az átlagos látogatót tartja vissza.
+  CSP: a főoldalon és a Videók oldalon `frame-src https://www.youtube-nocookie.com`,
+  `img-src https://i.ytimg.com`, a `media-src` az R2-t engedi. A közös
+  lejátszó-stílusok (`.video-embed`, `.video-poster`, `.video-play`) a `style.css` végén.
 
 ## Fejlesztői környezet
 - VS Code + Claude Code extension + Filesystem MCP.

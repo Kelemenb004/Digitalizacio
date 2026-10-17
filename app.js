@@ -365,6 +365,8 @@ function isDefaultMode() {
 }
 
 function updateSeasonalVisibility() {
+  // Ünnepi filmsáv (videok.js): kereséskor/szűréskor elrejtjük, hogy a találatok feljebb kerüljenek
+  document.getElementById('filmekSection')?.classList.toggle('filmek-szurt', !isDefaultMode());
   if (!dom.seasonalSection) return;
   if (state.seasonalHasContent && isDefaultMode()) {
     dom.seasonalSection.classList.remove('hidden');
