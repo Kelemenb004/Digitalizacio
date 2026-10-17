@@ -1,0 +1,13 @@
+# GitHub Pages (Jekyll) beállítás.
+# Az itt felsorolt fájlok/mappák NEM kerülnek ki az élő oldalra (kelenref100.hu),
+# csak a repóban maradnak. A ponttal kezdődő mappák (.claude, .obsidian) eleve kimaradnak.
+exclude:
+  - CLAUDE.md
+  - README.md
+  - docs/
+  - _archiv/
+  - _forrasok/
+  - "*.py"
+  - "*.bak_*"
+  - __pycache__/
+  - takaritas.sh

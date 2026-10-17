@@ -2,7 +2,7 @@
 
 A Budapest-Kelenföldi Református Egyházközség digitalizált igehirdetéseinek böngészője.
 
-A gyülekezet kazettatárából digitalizált felvételek (prédikációk, bibliaórák, evangelizációk) kereshető, szűrhető webes gyűjteménye.
+A gyülekezet kazettatárából digitalizált és a gyülekezet saját digitális archívumából származó felvételek (prédikációk, bibliaórák, evangelizációk) kereshető, szűrhető webes gyűjteménye.
 
 ## Technológia
 
@@ -15,7 +15,8 @@ A gyülekezet kazettatárából digitalizált felvételek (prédikációk, bibli
 A `config.js` fájlban állítható:
 
 - `R2_BASE_URL` – a Cloudflare R2 bucket publikus URL-je
-- `CHECK_R2_AVAILABILITY` – `true`: induláskor ellenőrzi, mely fájlok érhetők el az R2-n (eredmény 24 órára gyorsítótárazódik); `false`: ellenőrzés nélkül tölti be az összes felvételt (ajánlott, ha a bucket már teljes)
+- `INITIAL_PAGE_SIZE` / `PAGE_SIZE` – hány kártya jelenjen meg elsőre / a „Tovább” gombra
+- `BACKGROUND` – a háttérképek listája és beállításai
 
 ## Helyi futtatás
 
@@ -24,3 +25,7 @@ python -m http.server 8080
 ```
 
 Majd nyisd meg: `http://localhost:8080`
+
+## Igehirdető-oldalak
+
+A `lectures.json` változása után: `python igehirdeto_generator.py` (a gyökérből). Ez írja az `igehirdeto/`, `igehirdetok/` oldalakat és a `sitemap.xml`-t.

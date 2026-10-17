@@ -4,19 +4,19 @@
 - **Frontend:** statikus HTML/CSS/vanilla JS (nincs backend futásidőben, nincs
   build lépés, nincs framework). Fő fájlok: `index.html`, `app.js` (~1000
   sor, a teljes UI-logika), `style.css`, `config.js` (beállítások),
-  `impresszum.html` (különálló statikus oldal).
+  `impresszum/index.html` (különálló statikus oldal).
 - **Hosting:** GitHub Pages, repo: `Kelemenb004/Digitalizacio`. Egyedi domain
   `kelenref100.hu` a `CNAME` fájlon keresztül.
-- **Média:** Cloudflare R2 publikus bucket (~86 GB, ~1384 felvétel). Az audio
+- **Média:** Cloudflare R2 publikus bucket (~2677 felvétel, 5 évkör-mappa – ld. CLAUDE.md). Az audio
   közvetlenül R2-ről szolgálódik, a bucket dev URL-je a `config.js`
   `CONFIG.R2_BASE_URL`-jében van (`https://pub-07c808b19cf0458187fdb14c1d5d0129.r2.dev`,
   nem egyedi domain).
 - **Oldalgenerálás:** a főoldal (`index.html`) egyetlen statikus oldal, amely
-  betölti a `lectures.json`-t (1384 rekord: `path, eloado, datum, ido, lectio,
+  betölti a `lectures.json`-t (2677 rekord: `path, eloado, datum, ido, lectio,
   textus, megjegyzes, cim, kategoria, evkor, hossz_sec, tipus`), és az `app.js`
   kliensoldalon szűri/rendezi/lapozza. EMELLETT van egy Python oldalgenerátor,
   az `igehirdeto_generator.py` (gyökér), amely a `lectures.json`-ból legenerálja
-  a 75 előadó-oldalt (`igehirdeto/<slug>/index.html`) és a gyűjtőoldalt
+  az előadó-oldalakat (~105) (`igehirdeto/<slug>/index.html`) és a gyűjtőoldalt
   (`igehirdetok/index.html`), az `igehirdeto.js` lejátszót, frissíti a
   `sitemap.xml`-t és a `style.css`-t. Idempotens. A főoldalon az előadó továbbra
   is elérhető szűrőként is (`speakerFilter` legördülő az `eloado` mezőre), de

@@ -22,7 +22,7 @@
 
   --text:         #1A1A2E;
   --text-muted:   #4A5A7A;
-  --text-light:   #7A8FAF;
+  --text-light:   #56698A;
   --border:       #C8BFA8;
   --border-light: #DDD7CA;
 
@@ -51,7 +51,7 @@
 
   --text:         #DDD4C2;
   --text-muted:   #7A96BB;
-  --text-light:   #4E6585;
+  --text-light:   #8FA3C2;
 
   --border:       rgba(255, 255, 255, 0.10);
   --border-light: rgba(255, 255, 255, 0.06);
@@ -127,11 +127,6 @@ input:focus, select:focus {
   flex-shrink: 0;
 }
 
-.header-icon {
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-}
 
 .header-logo {
   height: 52px;
@@ -557,12 +552,6 @@ html:not([data-theme="dark"]) .icon-moon { display: block; }
   border-radius: 2px;
 }
 
-.category-eloadas    { background: #EEF1F8; color: #1B2E5C; }
-.category-lelkigyakorlat { background: #D1F0E3; color: #1A5C3A; }
-.category-predikacio { background: #EDD9FF; color: #5B2D8A; }
-.category-konferencia { background: #FFE9D9; color: #7B3A1A; }
-.category-interju    { background: #D0F0EE; color: #1A5550; }
-.category-szentmise  { background: #FFD9D9; color: #8B1A1A; }
 
 .card-duration {
   font-family: var(--font-ui);
@@ -600,15 +589,6 @@ html:not([data-theme="dark"]) .icon-moon { display: block; }
   border-bottom-color: var(--gold);
 }
 
-.card-description {
-  font-size: 0.9375rem;
-  color: var(--text-muted);
-  line-height: 1.55;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 
 .card-footer {
   display: flex;
@@ -633,12 +613,6 @@ html:not([data-theme="dark"]) .icon-moon { display: block; }
   color: var(--text-light);
 }
 
-.card-format {
-  font-family: var(--font-ui);
-  font-size: 0.72rem;
-  color: var(--text-light);
-  font-style: italic;
-}
 
 .card-play-btn {
   display: flex;
@@ -1032,12 +1006,6 @@ input[type="range"]#volumeSlider:focus {
 [data-theme="dark"] .spinner { border-color: rgba(255,255,255,0.12); border-top-color: var(--gold); }
 
 /* Kategória badge-ek sötét módban */
-[data-theme="dark"] .category-eloadas     { background: rgba(27,46,92,0.6);   color: #90B0E0; }
-[data-theme="dark"] .category-lelkigyakorlat { background: rgba(13,45,28,0.6); color: #70C0A0; }
-[data-theme="dark"] .category-predikacio  { background: rgba(30,13,53,0.6);   color: #B888E8; }
-[data-theme="dark"] .category-konferencia { background: rgba(45,21,6,0.6);    color: #D49060; }
-[data-theme="dark"] .category-interju     { background: rgba(13,37,32,0.6);   color: #50C0B8; }
-[data-theme="dark"] .category-szentmise   { background: rgba(42,8,8,0.6);     color: #D08080; }
 
 /* === Reszponzív === */
 @media (max-width: 768px) {
@@ -1154,8 +1122,6 @@ input[type="range"]#volumeSlider:focus {
   }
   .stat-value   { font-size: 1.25rem; }
   .stat-divider { display: none; }
-
-  .header-icon { width: 32px; height: 32px; }
   .header-logo { height: 34px; }
 }
 
@@ -1330,13 +1296,6 @@ input[type="range"]#volumeSlider:focus {
   line-height: 1.45;
 }
 
-/* Évkör badge a kártya alján */
-.card-evkor {
-  font-family: var(--font-ui);
-  font-size: 0.72rem;
-  color: var(--text-light);
-  font-style: italic;
-}
 
 /* "Különleges alkalom" extra badge */
 .card-badge-special {
@@ -1377,6 +1336,10 @@ input[type="range"]#volumeSlider:focus {
 .kat-imaheti         { background: #FFE9D9; color: #7B3A1A; }
 .kat-tortenelmi      { background: #F3E6D8; color: #6B3E1A; }
 .kat-zenei           { background: #E6E3F7; color: #3E3577; }
+.kat-unnepi          { background: #F8EFD8; color: #6E5410; }
+.kat-diakonia        { background: #DDEBF8; color: #1E4F7D; }
+.kat-reformacio      { background: #F9E0E0; color: #8E2323; }
+.kat-bunbanati       { background: #E4E7EC; color: #374253; }
 .kat-alap            { background: #EEF1F8; color: #1B2E5C; }
 
 [data-theme="dark"] .kat-istentisztelet  { background: rgba(27,46,92,0.6);   color: #90B0E0; }
@@ -1387,6 +1350,10 @@ input[type="range"]#volumeSlider:focus {
 [data-theme="dark"] .kat-imaheti         { background: rgba(45,21,6,0.6);    color: #D49060; }
 [data-theme="dark"] .kat-tortenelmi      { background: rgba(70,40,15,0.55);  color: #E0B088; }
 [data-theme="dark"] .kat-zenei           { background: rgba(40,34,90,0.55);  color: #B4AAF0; }
+[data-theme="dark"] .kat-unnepi          { background: rgba(110,84,16,0.35); color: #E8C870; }
+[data-theme="dark"] .kat-diakonia        { background: rgba(20,60,100,0.5);  color: #8EC0EE; }
+[data-theme="dark"] .kat-reformacio      { background: rgba(110,25,25,0.45); color: #F0A0A0; }
+[data-theme="dark"] .kat-bunbanati       { background: rgba(70,80,95,0.45);  color: #C2CAD6; }
 [data-theme="dark"] .kat-alap            { background: rgba(27,46,92,0.6);   color: #90B0E0; }
 
 /* --- Kártya akciók (lejátszás + letöltés + megosztás + kedvenc) --- */
@@ -1613,6 +1580,18 @@ input[type="range"]#volumeSlider:focus {
 
 
 /* IGEHIRDETO_GENERATOR_CSS_v1 - ne torold ezt a sort (duplikacio-vedelem) */
+
+/* Aloldali fejlec mobilon: ne logjon tul (B2 javitas) */
+.header-inner--sub .header-brand > a { min-width: 0; }
+@media (max-width: 768px) {
+  .header-inner--sub { flex-wrap: nowrap; }
+  .header-inner--sub .subpage-nav { order: 2; margin-left: auto; }
+  .header-inner--sub .theme-toggle { order: 3; flex-shrink: 0; }
+}
+@media (max-width: 560px) {
+  .header-inner--sub .header-titles { display: none; }
+}
+
 
 /* ===== Igehirdető-oldalak (aloldal navigáció, hero, statisztika, lista) ===== */
 .subpage-nav { display: flex; gap: 0.5rem; margin-left: auto; margin-right: 0.75rem; }

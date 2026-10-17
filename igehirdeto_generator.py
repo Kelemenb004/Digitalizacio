@@ -38,16 +38,14 @@ def format_time(secs):
     return f"{h}:{m:02d}:{s:02d}" if h else f"{m}:{s:02d}"
 
 def kategoria_cls(kat):
+    # Az app.js kategoriaCls()-evel EGYEZZEN
     k=unicodedata.normalize("NFD",(kat or "").lower())
     k="".join(c for c in k if unicodedata.category(c)!="Mn")
-    if "istentisztelet" in k: return "kat-istentisztelet"
-    if "evangelizac" in k: return "kat-evangelizacio"
-    if "kulonleges" in k: return "kat-kulonleges"
-    if "konfirmac" in k: return "kat-konfirmacio"
-    if "bibliakor" in k: return "kat-bibliakor"
-    if "imahet" in k or "ima het" in k: return "kat-imaheti"
-    if "tortenelmi" in k: return "kat-tortenelmi"
-    if "zenei" in k: return "kat-zenei"
+    for kulcs, cls in (("istentisztelet","kat-istentisztelet"),("bibliaor","kat-bibliakor"),("evangelizac","kat-evangelizacio"),
+                       ("kulonleges","kat-kulonleges"),("unnepi","kat-unnepi"),("imahet","kat-imaheti"),("diakonia","kat-diakonia"),
+                       ("reformacio","kat-reformacio"),("bunbanati","kat-bunbanati"),("tortenelmi","kat-tortenelmi"),
+                       ("zenei","kat-zenei"),("konfirmac","kat-konfirmacio")):
+        if kulcs in k: return cls
     return "kat-alap"
 
 def audio_url(path):
@@ -246,7 +244,7 @@ def head(title, desc, canonical, prefix="/", extra_ld=""):
 
 def header(prefix="/"):
     return f'''  <header class="site-header" role="banner">
-    <div class="header-inner">
+    <div class="header-inner header-inner--sub">
       <div class="header-brand">
         <a href="/" style="display:flex;align-items:center;gap:0.6rem;text-decoration:none;">
           <img class="header-logo" src="/images/logo.png" alt="Kelenföldi Református Egyházközség – Főoldal" title="Vissza a főoldalra">
@@ -566,6 +564,17 @@ IGEHIRDETO_JS = r"""
 IGEHIRDETO_CSS = r"""
 /* IGEHIRDETO_GENERATOR_CSS_v1 - ne torold ezt a sort (duplikacio-vedelem) */
 
+/* Aloldali fejlec mobilon: ne logjon tul (B2 javitas) */
+.header-inner--sub .header-brand > a { min-width: 0; }
+@media (max-width: 768px) {
+  .header-inner--sub { flex-wrap: nowrap; }
+  .header-inner--sub .subpage-nav { order: 2; margin-left: auto; }
+  .header-inner--sub .theme-toggle { order: 3; flex-shrink: 0; }
+}
+@media (max-width: 560px) {
+  .header-inner--sub .header-titles { display: none; }
+}
+
 /* ===== Igehirdető-oldalak (aloldal navigáció, hero, statisztika, lista) ===== */
 .subpage-nav { display: flex; gap: 0.5rem; margin-left: auto; margin-right: 0.75rem; }
 .subpage-nav-link {
@@ -655,7 +664,8 @@ def main():
         e = (l.get("eloado") or "").strip()
         if e: by_speaker[e].append(l)
 
-    def sort_key(l): return (l.get("datum") or "9999", l.get("path") or "")
+    # Legujabb elol; azonos napon a kesobbi idopont elol; datum nelkuliek a legvegen
+    def sort_key(l): return (bool(l.get("datum")), l.get("datum") or "", l.get("ido") or "", l.get("path") or "")
     speakers = []
     for name, recs in by_speaker.items():
         rs = sorted(recs, key=sort_key, reverse=True)
@@ -706,6 +716,30 @@ def main():
         with open("%s/index.html" % outdir, "w", encoding="utf-8") as fp:
             fp.write(page)
     print("Eloado-oldalak: %d db legeneralva." % len(speakers))
+
+    # Megszunt eloado-oldalak (nevvaltozas / osszevonas) -> atiranyito oldal,
+    # mert a regi URL-ek mar indexelve vannak. Idempotens.
+    ATIRANYITAS = {"pap-tibor": "papp-tibor", "takaro-tamas": "ifj-takaro-tamas"}
+    elo_slugok = {sp["slug"] for sp in speakers}
+    redir = 0
+    for d in sorted(os.listdir("igehirdeto")):
+        if d in elo_slugok or not os.path.isdir(os.path.join("igehirdeto", d)):
+            continue
+        cel = ATIRANYITAS.get(d)
+        url = "/igehirdeto/%s/" % cel if cel in elo_slugok else "/igehirdetok/"
+        html_ = ('<!DOCTYPE html>\n<html lang="hu"><head><meta charset="utf-8">'
+                 '<title>Átirányítás – Digitális Hangarchívum</title>'
+                 '<meta name="robots" content="noindex">'
+                 '<link rel="canonical" href="%s%s">'
+                 '<meta http-equiv="refresh" content="0; url=%s">'
+                 '<script>location.replace("%s")</script></head>'
+                 '<body><p>Az oldal új helyre került: <a href="%s">%s%s</a></p></body></html>\n'
+                 % (SITE, url, url, url, url, SITE, url))
+        with open("igehirdeto/%s/index.html" % d, "w", encoding="utf-8") as fp:
+            fp.write(html_)
+        redir += 1
+    if redir:
+        print("Atiranyito oldal (megszunt eloado): %d db." % redir)
 
     rows = "\n".join(index_row(sp) for sp in speakers)
     total_ora = round(sum(x.get("hossz_sec",0) for x in L)/3600)

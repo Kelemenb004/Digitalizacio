@@ -25,3 +25,7 @@ datumhiba_fajlok.csv
 uj_207_rekord.json
 r2_feltoltes.sh
 r2_feltoltes_lista.json
+
+# Archivalt segedfajlok / cache (nem az oldal resze)
+_archiv/
+__pycache__/

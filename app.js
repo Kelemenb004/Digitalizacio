@@ -10,7 +10,6 @@
 const state = {
   lectures:          [],       // összes felvétel (shuffle-kulccsal kiegészítve)
   filtered:          [],       // szűrt + rendezett lista
-  page:              0,        // "load more" oldalszám
   current:           null,     // éppen lejátszott felvétel (path alapján azonosítjuk)
   isPlaying:         false,
   volume:            CONFIG.DEFAULT_VOLUME,
@@ -316,7 +315,6 @@ function applyFilters() {
   const speaker = dom.speakerFilter?.value || '';
   const sortMode = dom.sortSelect?.value || 'random';
 
-  state.page = 0;
 
   state.filtered = state.lectures.filter(l => {
     if (state.showFavOnly && !state.favorites.has(l.path)) return false;
@@ -658,7 +656,7 @@ function updateCardStates() {
     if (btn) {
       btn.classList.toggle('playing', isPlaying);
       btn.setAttribute('aria-label',
-        `${isPlaying ? 'Szünet' : 'Lejátszás'}: ${escHtml(state.current?.cim ?? '')}`);
+        `${isPlaying ? 'Szünet' : 'Lejátszás'}: ${state.current?.cim ?? ''}`);
       btn.querySelector('.play-icon').innerHTML = playIcon(isPlaying);
       btn.querySelector('span:last-child').textContent = isPlaying ? 'Szünet' : 'Lejátszás';
     }
@@ -681,7 +679,6 @@ function playRandomLecture() {
   state.filtered = [pick, ...pool.filter(l => l.path !== pick.path)];
 
   // Újrarenderelés az első adaggal (a pick lesz az első kártya).
-  state.page = 0;
   renderLectures(state.filtered);
 
   startPlaying(pick);
@@ -845,7 +842,7 @@ function setupExpandedPlayer() {
 
   // --- Esc zár ---
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && dom.pex.classList.contains('open')) closePex();
+    if (e.key === 'Escape' && dom.pex.classList.contains('open')) { e.preventDefault(); closePex(); }
   });
 
   // --- (3) Húzás-gesztusok ---
@@ -1026,13 +1023,15 @@ function setupEventListeners() {
   if (filtersPanelClose) filtersPanelClose.addEventListener('click', closeFilters);
   if (filtersPanelDone) filtersPanelDone.addEventListener('click', closeFilters);
   if (filtersBackdrop) filtersBackdrop.addEventListener('click', closeFilters);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !filtersPanel.hidden) closeFilters(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !filtersPanel.hidden) { e.preventDefault(); closeFilters(); } });
 
   document.addEventListener('keydown', handleKeyboard);
 }
 
 /* ---------- Billentyűzet ---------- */
 function handleKeyboard(e) {
+  // Ha egy panel (nagy lejatszo / szuropanel) mar lekezelte az Esc-et, ne allitsuk le a lejatszast
+  if (e.defaultPrevented) return;
   const tag = e.target.tagName;
   if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
   if (!state.current) return;
@@ -1097,15 +1096,20 @@ function formatTime(secs) {
 }
 
 function kategoriaCls(kat) {
-  const k = (kat || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  // A 12 kategoria mindegyike sajat szint kap (a generator kategoria_cls-evel EGYEZZEN)
+  const k = (kat || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   if (k.includes('istentisztelet'))  return 'kat-istentisztelet';
+  if (k.includes('bibliaor'))        return 'kat-bibliakor';
   if (k.includes('evangelizac'))     return 'kat-evangelizacio';
   if (k.includes('kulonleges'))      return 'kat-kulonleges';
-  if (k.includes('konfirmac'))       return 'kat-konfirmacio';
-  if (k.includes('bibliakori') || k.includes('bibliakor')) return 'kat-bibliakor';
-  if (k.includes('imaheti') || k.includes('ima het')) return 'kat-imaheti';
+  if (k.includes('unnepi'))          return 'kat-unnepi';
+  if (k.includes('imahet'))          return 'kat-imaheti';      // Imahet + Alliance Imahet
+  if (k.includes('diakonia'))        return 'kat-diakonia';
+  if (k.includes('reformacio'))      return 'kat-reformacio';
+  if (k.includes('bunbanati'))       return 'kat-bunbanati';
   if (k.includes('tortenelmi'))      return 'kat-tortenelmi';
   if (k.includes('zenei'))           return 'kat-zenei';
+  if (k.includes('konfirmac'))       return 'kat-konfirmacio';
   return 'kat-alap';
 }
 
@@ -1218,39 +1222,6 @@ const BIBLIAI_KONYVEK = {
   'judas':'Júd','jud':'Júd','jelenesek':'Jel','jel':'Jel',
 };
 
-function igehelyToSzentiras(raw) {
-  if (!raw) return null;
-  try {
-    let s = String(raw).trim();
-    s = s.replace(/^(lecti[oó]|textus|lextus)\s*:?\s*/i, '').trim();
-    s = s.split(/\s+(?:lecti[oó]|textus)\s*:/i)[0].trim();
-    s = s.replace(/\bev\.?\s*/i, '');
-    const zsoltM = s.match(/^(\d+)\.\s*(zsolt[a-záéó]*)\s*(.*)$/i);
-    if (zsoltM) {
-      const fej = zsoltM[1], mar = zsoltM[3].trim().replace(/\s+/g, '').replace(/[-–,;.\s]+$/, '').replace(/:/g, ',');
-      const zsoltUtvonal = mar ? `Zsolt${fej},${mar}` : `Zsolt${fej}`;
-      return 'https://szentiras.eu/RUF/' + encodeURIComponent(zsoltUtvonal);
-    }
-    let norm = s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-    const rom = { v:'5', iv:'4', iii:'3', ii:'2', i:'1' };
-    const rm = norm.match(/^(iv|iii|ii|i|v)[.,:]?\s*([a-z])/);
-    if (rm) norm = rom[rm[1]] + norm.slice(rm.index + rm[1].length).replace(/^[.,:\s]+/, '');
-    const m = norm.match(/^(\d?\s*[a-z][a-z.\s]*?)\.?\s*[:\s]?\s*(\d.*)?$/);
-    if (!m) return null;
-    const konyvNorm = m[1].replace(/[.\s:,]/g, '');
-    let hiv = (m[2] || '').trim().replace(/^:/, '').trim();
-    const rov = BIBLIAI_KONYVEK[konyvNorm];
-    if (!rov) return null;
-    hiv = hiv.replace(/\s+/g, '');
-    // Csonka végződések levágása: záró kötőjel, vessző, pont, pontosvessző szám nélkül
-    hiv = hiv.replace(/[-–,;.\s]+$/, '');
-    // hiv: a fejezet:vers rész, pl. "3:16" vagy "4:1-6" -> a kettőspontot vesszőre cseréljük
-    const hivVesszo = hiv.replace(/:/g, ',');
-    const utvonal = hivVesszo ? `${rov}${hivVesszo}` : rov;
-    return 'https://szentiras.eu/RUF/' + encodeURIComponent(utvonal);
-  } catch { return null; }
-}
-
 // ===== ÖSSZETETT IGEHELY-LINKELÉS (több szakasz külön link) =====
 function igehelySzakaszok(raw) {
   if (!raw) return [];
@@ -1358,7 +1329,6 @@ function handleUrlHash() {
     // mint a randomnál). A szűrők/keresés alaphelyzetbe, hogy a felvétel biztosan látszódjon.
     const pool = state.filtered.length > 0 ? state.filtered : state.lectures.slice();
     state.filtered = [lecture, ...pool.filter(l => l.path !== lecture.path)];
-    state.page = 0;
     renderLectures(state.filtered);
 
     startPlaying(lecture);
@@ -1372,34 +1342,6 @@ function handleUrlHash() {
       }
     });
   } catch {}
-}
-
-// Biztosítja hogy a felvétel kártyája ki legyen renderelve (ha kell, "tovább"-ot tölt),
-// majd odagörget és opcionálisan kiemeli. A findCard csak a már renderelt kártyákat látja,
-// ezért ha a felvétel a szűrt lista mélyén van, előbb be kell tölteni.
-function revealCard(path, { highlight = false } = {}) {
-  // Ha a felvétel a szűrt listában van, de még nincs renderelve, töltsünk amíg előkerül.
-  const idx = state.filtered.findIndex(l => l.path === path);
-  if (idx >= 0) {
-    let guard = 0;
-    while (dom.grid.children.length <= idx && guard < 200) {
-      const before = dom.grid.children.length;
-      loadMoreLectures();
-      if (dom.grid.children.length === before) break; // nincs több betölthető
-      guard++;
-    }
-  }
-  // A render után görgessünk (requestAnimationFrame: a böngésző már elrendezte a DOM-ot).
-  requestAnimationFrame(() => {
-    const card = findCard(path);
-    if (!card) return;
-    scrollCardIntoView(card);
-    if (highlight) {
-      card.classList.add('just-shared');
-      // a pulzálás után levesszük, hogy újra kiváltható legyen
-      setTimeout(() => card.classList.remove('just-shared'), 2600);
-    }
-  });
 }
 
 // A kártyát úgy görgeti a képbe, hogy a FIX FEJLÉC ne takarja el.
