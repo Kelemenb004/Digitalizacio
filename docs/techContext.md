@@ -41,6 +41,15 @@
   CSP: a főoldalon és a Videók oldalon `frame-src https://www.youtube-nocookie.com`,
   `img-src https://i.ytimg.com`, a `media-src` az R2-t engedi. A közös
   lejátszó-stílusok (`.video-embed`, `.video-poster`, `.video-play`) a `style.css` végén.
+- **Telepíthető alkalmazás (PWA, 2026-10-18):** `manifest.json` (id/scope `/`,
+  ikonok 192/512 + maskable), `telepites.js` (a `beforeinstallprompt` elkapása; a gomb
+  ezzel hívja a böngésző telepítő ablakát, ha nincs ilyen – iPhone, Firefox, korai
+  látogatás –, platformfüggő útmutatót mutat; Messenger/Facebook belső böngészőjére
+  figyelmeztet), `sw.js` (a Chrome telepítő ablakához kell fetch-kezelő; csak a
+  navigációs kéréseket figyeli, hiba esetén `offline.html`; a hang/videó/kép kéréseket
+  nem érinti, semmit nem gyorsítótáraz a tartalomból). iOS: `apple-mobile-web-app-title`
+  = „Hangarchívum”. A manifest egyelőre csak a főoldalon van belinkelve. A gomb fő helye
+  a fejléc alatti sáv (`#installSav`, nem ragadós – görgetéskor nem foglal helyet).
 
 ## Fejlesztői környezet
 - VS Code + Claude Code extension + Filesystem MCP.

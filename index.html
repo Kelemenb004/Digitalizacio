@@ -61,6 +61,9 @@
   <link rel="icon" href="favicon-32x32.png" sizes="32x32" type="image/png">
   <link rel="icon" href="favicon-16x16.png" sizes="16x16" type="image/png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-title" content="Hangarchívum">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -86,7 +89,7 @@
 
   <!-- ===== Fejléc ===== -->
   <header class="site-header" role="banner">
-    <div class="header-inner">
+    <div class="header-inner header-inner--fo">
 
       <div class="header-brand">
         <img class="header-logo" id="homeLogo" src="images/logo.png" alt="Kelenföldi Református Egyházközség – Főoldal" title="Vissza a főoldalra" role="button" tabindex="0" style="cursor:pointer;">
@@ -130,6 +133,16 @@
     </div>
   </header>
 
+  <!-- ===== Alkalmazás telepítése – sáv a fejléc alatt (a gomb fő helye; telepites.js) ===== -->
+  <div class="telepites-sav" id="installSav" hidden>
+    <div class="telepites-sav-inner">
+      <p class="telepites-sav-szoveg">Használd alkalmazásként – egy koppintással indul a telefonodról vagy a számítógépedről.</p>
+      <button type="button" class="telepites-sav-btn" id="installSavBtn">
+        <span aria-hidden="true">📲</span> Alkalmazás telepítése
+      </button>
+    </div>
+  </div>
+
   <!-- ===== Hero nyitókép ===== -->
   <section class="hero" aria-label="Bevezető">
     <div class="hero-overlay"></div>
@@ -170,6 +183,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m10 9 5 3-5 3z" fill="currentColor" stroke="none"/></svg>
         <span>Videók</span>
       </a>
+      <button type="button" class="panel-nav-link" id="installMenuBtn" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M12 7v7"/><path d="m9 11 3 3 3-3"/></svg>
+        <span>Alkalmazás telepítése</span>
+      </button>
       <div class="filters-panel-body">
         <label class="filter-field">
           <span class="filter-field-label">Kategória</span>
@@ -451,5 +468,6 @@
   <script src="config.js"></script>
   <script src="app.js"></script>
   <script src="videok.js"></script>
+  <script src="telepites.js"></script>
 </body>
 </html>

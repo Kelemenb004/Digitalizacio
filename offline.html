@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; img-src 'self'">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#1B2E5C">
+  <title>Nincs internetkapcsolat – Digitális Hangarchívum</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: #F5F0E8; color: #1A1A2E; padding: 1.5rem; box-sizing: border-box;
+      font-family: Georgia, 'Times New Roman', serif; text-align: center;
+    }
+    .doboz { max-width: 26rem; }
+    img { width: 72px; height: 72px; border-radius: 16px; }
+    h1 { font-size: 1.5rem; color: #1B2E5C; margin: 1rem 0 0.5rem; }
+    p { font-size: 1.05rem; line-height: 1.5; margin: 0 0 1.5rem; }
+    a {
+      display: inline-block; padding: 0.7rem 1.4rem; border-radius: 6px; text-decoration: none;
+      background: #1B2E5C; color: #fff; font-family: system-ui, sans-serif; font-weight: 600;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { background: #111827; color: #DDD4C2; }
+      h1 { color: #E0BC72; }
+      a { background: #C9A44A; color: #0F1D3A; }
+    }
+  </style>
+</head>
+<body>
+  <div class="doboz">
+    <img src="/icon-192.png" alt="">
+    <h1>Nincs internetkapcsolat</h1>
+    <p>A hangarchívum használatához internet szükséges. Ellenőrizd a kapcsolatot, majd próbáld újra.</p>
+    <a href="/">Újrapróbálom</a>
+  </div>
+</body>
+</html>

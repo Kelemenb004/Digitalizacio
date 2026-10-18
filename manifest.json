@@ -1,8 +1,10 @@
 {
+  "id": "/",
   "name": "Digitális Hangarchívum",
   "short_name": "Hangarchívum",
-  "description": "Digitalizált Igehirdetések gyűjteménye.",
+  "description": "A Budapest-Kelenföldi Református Egyházközség digitális hangarchívuma – igehirdetések, előadások, filmfelvételek.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "any",
   "theme_color": "#1B2E5C",

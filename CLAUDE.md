@@ -52,6 +52,14 @@ Az audio nem a repóban van, hanem Cloudflare R2-n.
   az eredeti digitalizált fájl VÁLTOZATLANUL — a felhasználó kérésére a videókat
   nem kódoljuk át, nem vágjuk, nem javítjuk. Feltöltés: `_forrasok/r2_filmek_feltoltes.sh`.
   A forrás mp4-ek a gyökérben vannak, a `.gitignore` kizárja őket (GitHub: max. 100 MB/fájl).
+- Telepíthető alkalmazás (PWA): `manifest.json` + `telepites.js` („📲 Alkalmazás telepítése”
+  gomb a fejléc alatti sávban – ez a fő helye, minden méretben – + menüpont a ☰ panelben;
+  Androidon/asztalon a böngésző saját telepítő ablaka, iPhone-on útmutató; telepített
+  alkalmazásban rejtve) + `sw.js` (minimális service worker: csak oldalbetöltésnél,
+  hálózat nélkül az `offline.html`-t mutatja; tartalmat NEM gyorsítótáraz). Új
+  sw-változatnál a `CACHE` nevét kell léptetni.
+- Főoldali fejléc (`.header-inner--fo`): 1099 px-ig két sorban (a kereső külön sorban),
+  felette egy sorban; a kereső zsugorodhat (`min-width: 0`).
 - Fejlesztés: VS Code + Claude Code + Filesystem MCP, commit GitHub Desktoppal.
 
 ## Konvenciók / szabályok

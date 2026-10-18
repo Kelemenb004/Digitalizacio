@@ -223,11 +223,13 @@ input:focus, select:focus {
 
 .header-search {
   flex: 1;
+  min-width: 0;            /* zsugorodhat – különben 769–1100 px között kilóg a fejléc */
   display: flex;
   gap: 0.5rem;
   max-width: 480px;
   margin-left: auto;
 }
+.header-search input[type="search"] { min-width: 0; }
 
 .header-search input[type="search"] {
   flex: 1;
@@ -1996,4 +1998,114 @@ body.pex-open { overflow: hidden; }
 }
 @media print {
   .filmek-section { display: none; }
+}
+
+/* =====================================================================
+   Telepítés gomb + útmutató ablak (telepites.js)
+   ===================================================================== */
+button.panel-nav-link[hidden] { display: none !important; }
+button.panel-nav-link {
+  width: 100%; border: 0; cursor: pointer; text-align: left; font-family: var(--font-ui);
+}
+
+.tel-dialog {
+  margin: auto;                       /* az általános margó-nullázás felülírná a középre igazítást */
+  width: min(28rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  padding: 0; border: 1px solid var(--gold-border); border-radius: var(--radius-lg);
+  background: var(--white); color: var(--text);
+  box-shadow: var(--shadow-lg);
+}
+.tel-dialog::backdrop { background: rgba(15, 29, 58, 0.55); }
+.tel-doboz { position: relative; padding: 1.75rem 1.5rem 1.5rem; text-align: center; }
+.tel-zar {
+  position: absolute; top: 0.6rem; right: 0.6rem; width: 36px; height: 36px;
+  border: 0; border-radius: var(--radius); background: transparent;
+  color: var(--text-muted); font-size: 1rem; cursor: pointer;
+}
+.tel-zar:hover { background: var(--cream-dark); color: var(--navy); }
+.tel-logo { width: 56px; height: 56px; border-radius: 14px; box-shadow: var(--shadow-sm); }
+.tel-cim {
+  font-family: var(--font-serif); font-size: 1.35rem; color: var(--navy);
+  margin: 0.75rem 0 0.35rem;
+}
+[data-theme="dark"] .tel-cim { color: var(--gold-light); }
+.tel-bev { font-family: var(--font-body); font-size: 1.05rem; color: var(--text-muted); margin: 0 0 1rem; }
+.tel-lepesek {
+  text-align: left; margin: 0 0 1.25rem; padding: 0; list-style: none; counter-reset: lepes;
+  font-family: var(--font-ui); font-size: 0.95rem; line-height: 1.5;
+}
+.tel-lepesek li {
+  position: relative; padding: 0.55rem 0 0.55rem 2.4rem; counter-increment: lepes;
+  border-top: 1px solid var(--border-light);
+}
+.tel-lepesek li:first-child { border-top: 0; }
+.tel-lepesek li::before {
+  content: counter(lepes); position: absolute; left: 0; top: 0.55rem;
+  width: 1.6rem; height: 1.6rem; border-radius: 50%;
+  background: var(--navy); color: #fff; font-weight: 700; font-size: 0.85rem;
+  display: flex; align-items: center; justify-content: center;
+}
+[data-theme="dark"] .tel-lepesek li::before { background: var(--gold); color: var(--navy-dark); }
+.tel-ikon { width: 1.15em; height: 1.15em; vertical-align: -0.2em; color: #0A84FF; }
+.tel-figyelem {
+  text-align: left; font-family: var(--font-ui); font-size: 0.9rem; line-height: 1.45;
+  background: var(--gold-pale); border: 1px solid var(--gold-border); border-radius: var(--radius);
+  padding: 0.7rem 0.85rem; margin: 0 0 1rem; color: var(--text);
+}
+[data-theme="dark"] .tel-figyelem { background: rgba(201,164,74,0.12); }
+.tel-megj { font-family: var(--font-ui); font-size: 0.85rem; color: var(--text-muted); margin: -0.5rem 0 1.25rem; }
+.tel-ok {
+  min-width: 9rem; padding: 0.7rem 1.4rem; border: 0; border-radius: var(--radius);
+  background: var(--navy); color: #fff; font-family: var(--font-ui); font-weight: 600; font-size: 0.95rem;
+  cursor: pointer;
+}
+.tel-ok:hover { background: var(--navy-light); }
+[data-theme="dark"] .tel-ok { background: var(--gold); color: var(--navy-dark); }
+
+/* Alkalmazás telepítése – sáv közvetlenül a fejléc alatt (a gomb fő helye, minden méretben) */
+.telepites-sav {
+  background: var(--navy-dark);
+  border-bottom: 1px solid rgba(201, 164, 74, 0.25);
+}
+.telepites-sav[hidden] { display: none !important; }
+.telepites-sav-inner {
+  max-width: 1200px; margin: 0 auto; padding: 0.7rem 1.5rem 0.8rem;
+  display: flex; align-items: center; justify-content: center; gap: 0.6rem 1.5rem; flex-wrap: wrap;
+}
+.telepites-sav-szoveg {
+  margin: 0; font-family: var(--font-body); font-size: 1.05rem; color: rgba(245, 240, 232, 0.85);
+}
+.telepites-sav-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  min-height: 44px; padding: 0.55rem 1.4rem;
+  background: rgba(201, 164, 74, 0.18);
+  color: var(--gold-light);
+  border: 1.5px solid rgba(201, 164, 74, 0.6);
+  border-radius: var(--radius);
+  font-family: var(--font-ui); font-size: 1rem; font-weight: 600; letter-spacing: 0.01em;
+  white-space: nowrap; cursor: pointer;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+.telepites-sav-btn:hover,
+.telepites-sav-btn:focus-visible { background: rgba(201, 164, 74, 0.3); border-color: var(--gold); color: var(--text-invert); }
+@media (max-width: 960px) {
+  .telepites-sav-szoveg { display: none; }
+}
+@media (max-width: 700px) {
+  .telepites-sav-inner { padding: 0.65rem 1rem 0.8rem; }
+  .telepites-sav-btn { width: 100%; max-width: 460px; min-height: 46px; }
+}
+
+/* Tablet (769–1099 px): a főoldali fejléc két sorban, mint telefonon – különben a kereső túl kicsi */
+@media (min-width: 769px) and (max-width: 1099px) {
+  :root:has(.header-inner--fo) { --header-h: 116px; }
+  .header-inner--fo { padding: 0.625rem 1.5rem; flex-wrap: wrap; height: auto; gap: 0.625rem 1rem; }
+  .header-inner--fo .header-brand   { flex: 1; min-width: 0; order: 1; }
+  .header-inner--fo .random-btn     { order: 2; min-height: 40px; }
+  .header-inner--fo .filters-toggle { order: 3; width: 40px; height: 40px; }
+  .header-inner--fo .theme-toggle   { order: 4; width: 40px; height: 40px; }
+  .header-inner--fo .header-search  { order: 5; flex: 1 1 100%; max-width: none; margin-left: 0; }
+  .header-inner--fo .header-search input[type="search"],
+  .header-inner--fo .search-btn     { min-height: 40px; }
 }
