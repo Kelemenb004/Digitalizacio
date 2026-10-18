@@ -620,6 +620,8 @@ function startPlaying(lecture) {
   history.replaceState(null, '', '#felvetel=' + encodeURIComponent(lecture.path));
   updateCardStates();
   updatePexView();
+  kovetkezoElrejt();
+  mediaSessionMetaadat();
 }
 
 function togglePlayPause() {
@@ -637,13 +639,21 @@ function stopPlayer() {
   state.current  = null;
   state.isPlaying = false;
   dom.player.classList.add('hidden');
+  tekeres.aktiv = null;
   dom.progressBar.value = 0;
+  if (dom.pexProgress) dom.pexProgress.value = 0;
   updateProgressBarStyle(0);
   dom.timeCurrent.textContent  = '0:00';
+  if (dom.pexTimeCurrent) dom.pexTimeCurrent.textContent = '0:00';
   dom.timeTotal.textContent    = '0:00';
   history.replaceState(null, '', location.pathname + location.search);
   updateCardStates();
   closePex();
+  kovetkezoElrejt();
+  toltesJelzes();
+  if ('mediaSession' in navigator) {
+    try { navigator.mediaSession.metadata = null; navigator.mediaSession.playbackState = 'none'; } catch {}
+  }
 }
 
 function updateCardStates() {
@@ -721,25 +731,34 @@ function setupAudioListeners() {
 
   dom.audio.addEventListener('ended', () => {
     state.isPlaying = false;
-    dom.progressBar.value = 100;
-    updateProgressBarStyle(100);
+    pozicioMegjelenites(100);
     updateCardStates();
   });
 
   dom.audio.addEventListener('timeupdate', () => {
     if (!dom.audio.duration) return;
-    const pct = (dom.audio.currentTime / dom.audio.duration) * 100;
-    dom.progressBar.value = pct;
-    updateProgressBarStyle(pct);
-    dom.timeCurrent.textContent = formatTime(dom.audio.currentTime);
-    if (dom.pexProgress) dom.pexProgress.value = pct;
-    if (dom.pexTimeCurrent) dom.pexTimeCurrent.textContent = formatTime(dom.audio.currentTime);
+    // Húzás közben és amíg az ugrás folyamatban van, nem írjuk felül a csúszkát
+    // (különben a pöcök visszaugrana az ujj/egér alól).
+    if (tekeres.aktiv || dom.audio.seeking) return;
+    pozicioMegjelenites((dom.audio.currentTime / dom.audio.duration) * 100);
   });
 
   dom.audio.addEventListener('loadedmetadata', () => {
     dom.timeTotal.textContent = formatTime(dom.audio.duration);
     if (dom.pexTimeTotal) dom.pexTimeTotal.textContent = formatTime(dom.audio.duration);
   });
+
+  // Töltés-jelzés (forgó kör a play gombon), egyenletes sáv, Media Session, sorozat következő része
+  ['waiting', 'playing', 'canplay', 'seeking', 'seeked', 'pause', 'play', 'loadstart', 'emptied', 'error', 'stalled']
+    .forEach(ev => dom.audio.addEventListener(ev, toltesJelzes));
+  dom.audio.addEventListener('playing', simaSavIndit);
+  dom.audio.addEventListener('progress', () => {             // a betöltött rész kijelzése szünet alatt is
+    if (!state.isPlaying && !tekeres.aktiv) updateProgressBarStyle(parseFloat(dom.progressBar.value) || 0);
+  });
+  ['loadedmetadata', 'seeked', 'ratechange', 'play', 'pause'].forEach(ev => dom.audio.addEventListener(ev, mediaSessionPozicio));
+  ['play', 'pause'].forEach(ev => dom.audio.addEventListener(ev, mediaSessionAllapot));
+  dom.audio.addEventListener('ended', sorozatVegen);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) simaSavIndit(); });
 
   dom.audio.addEventListener('error', () => {
     // Csak akkor jelezzünk, ha tényleg van forrás és az nem tölthető be
@@ -771,6 +790,19 @@ function cachePexDom() {
   dom.pexSpeed       = document.getElementById('pexSpeed');
   dom.pexShare       = document.getElementById('pexShare');
   dom.pexDownload    = document.getElementById('pexDownload');
+  // Sorozat: „‹ Előző rész / Következő rész ›” – a fő vezérlők alá
+  const vezerlok = dom.pex && dom.pex.querySelector('.pex-controls');
+  if (vezerlok && !document.getElementById('pexSorozat')) {
+    const sor = document.createElement('div');
+    sor.className = 'pex-sorozat'; sor.id = 'pexSorozat'; sor.hidden = true;
+    sor.addEventListener('click', e => {
+      const b = e.target.closest('.pex-sorozat-btn'); if (!b) return;
+      const x = sorozatSzomszed(state.current, +b.dataset.irany);
+      if (x) { rezges(); startPlaying(x); }
+    });
+    vezerlok.after(sor);
+  }
+  dom.pexSorozat = document.getElementById('pexSorozat');
 }
 
 function openPex() {
@@ -815,11 +847,14 @@ function updatePexView() {
     if (l.ido)   dp.push(l.ido);
     dom.pexDate.textContent = dp.join(' · ');
   }
+  pexSzinezes(l);
+  pexSorozatFrissit();
   updatePexPlayIcon();
 }
 
 function updatePexPlayIcon() {
   if (!dom.pexPlay) return;
+  if (dom.pex) dom.pex.classList.toggle('szol', state.isPlaying);   // a borító finoman „kinyílik” lejátszáskor
   dom.pexPlay.classList.toggle('is-playing', state.isPlaying);
   dom.pexPlay.setAttribute('aria-label', state.isPlaying ? 'Szünet' : 'Lejátszás');
   dom.pexPlay.innerHTML = state.isPlaying
@@ -853,22 +888,19 @@ function setupExpandedPlayer() {
     onUp: () => { if (!dom.pex.classList.contains('open')) openPex(); }
   });
   // b) A NAGY nézeten LEFELÉ húzás -> zár (csak ha a tetejénél vagyunk, hogy ne ütközzön a görgetéssel)
-  attachSwipe(dom.pex, {
-    onDown: () => { if (dom.pex.scrollTop <= 4) closePex(); }
-  });
+  pexHuzas();   // a nagy nézet az ujjal együtt mozog lefelé, és rugalmasan zár / visszapattan
 
   // --- A nagy nézet vezérlői ugyanazokat a függvényeket hívják, mint a mini-sáv ---
-  if (dom.pexPlay)     dom.pexPlay.addEventListener('click', togglePlayPause);
+  if (dom.pexPlay)     dom.pexPlay.addEventListener('click', () => { rezges(); togglePlayPause(); });
   if (dom.pexSkipBack) dom.pexSkipBack.addEventListener('click', () => {
+    rezges();
     dom.audio.currentTime = Math.max(0, dom.audio.currentTime - CONFIG.SKIP_SECONDS);
   });
   if (dom.pexSkipFwd)  dom.pexSkipFwd.addEventListener('click', () => {
+    rezges();
     if (dom.audio.duration) dom.audio.currentTime = Math.min(dom.audio.duration, dom.audio.currentTime + CONFIG.SKIP_SECONDS);
   });
-  if (dom.pexProgress) dom.pexProgress.addEventListener('input', () => {
-    if (!dom.audio.duration) return;
-    dom.audio.currentTime = (dom.pexProgress.value / 100) * dom.audio.duration;
-  });
+  tekeroCsuszka(dom.pexProgress);
   if (dom.pexSpeed) dom.pexSpeed.addEventListener('change', () => {
     dom.audio.playbackRate = parseFloat(dom.pexSpeed.value);
     if (dom.speedSelect) dom.speedSelect.value = dom.pexSpeed.value; // szinkron a mini-sávval
@@ -886,6 +918,8 @@ function attachSwipe(el, { onUp, onDown } = {}) {
   if (!el) return;
   let startY = null, startX = null, moved = false;
   el.addEventListener('touchstart', e => {
+    // Csúszkán (tekerés, hangerő) indított érintés nem gesztus – ne nyissa/zárja a lejátszót.
+    if (e.target.closest && e.target.closest('input[type="range"]')) { startY = startX = null; return; }
     startY = e.touches[0].clientY; startX = e.touches[0].clientX; moved = false;
   }, { passive: true });
   el.addEventListener('touchmove', e => {
@@ -912,12 +946,15 @@ function setupEventListeners() {
   setupAudioListeners();
   setupExpandedPlayer();
 
-  dom.playBtn.addEventListener('click', togglePlayPause);
+  dom.playBtn.addEventListener('click', () => { rezges(); togglePlayPause(); });
+  mediaSessionBeallit();
 
   dom.skipBack.addEventListener('click', () => {
+    rezges();
     dom.audio.currentTime = Math.max(0, dom.audio.currentTime - CONFIG.SKIP_SECONDS);
   });
   dom.skipFwd.addEventListener('click', () => {
+    rezges();
     if (dom.audio.duration)
       dom.audio.currentTime = Math.min(dom.audio.duration, dom.audio.currentTime + CONFIG.SKIP_SECONDS);
   });
@@ -930,13 +967,7 @@ function setupEventListeners() {
     });
   }
 
-  dom.progressBar.addEventListener('input', () => {
-    if (!dom.audio.duration) return;
-    const pct = parseFloat(dom.progressBar.value);
-    dom.audio.currentTime = (pct / 100) * dom.audio.duration;
-    dom.timeCurrent.textContent = formatTime(dom.audio.currentTime);
-    updateProgressBarStyle(pct);
-  });
+  tekeroCsuszka(dom.progressBar);
 
   dom.volumeSlider.addEventListener('input', () => {
     state.volume = parseFloat(dom.volumeSlider.value);
@@ -1390,10 +1421,320 @@ async function shareLecture(lecture, btn) {
   }
 }
 
+/* ---------- Tekerés (mini-sáv + nagy nézet csúszkája) ----------
+   Húzás közben CSAK a kijelzés frissül (a pöcök nem ugrik vissza, és nem indul
+   minden apró mozdulatra új letöltés az R2-ről); a tényleges ugrás elengedéskor,
+   egyszer történik. Koppintásra is odaugrik (iPhone-on is, ahol a natív csúszka
+   csak a pöcök húzására reagál). Billentyűzettel (nyilak) is működik. */
+const tekeres = { aktiv: null };
+
+function pozicioMegjelenites(pct) {
+  pct = Math.min(100, Math.max(0, pct || 0));
+  const t = (dom.audio.duration || 0) * pct / 100;
+  dom.progressBar.value = pct;
+  if (dom.pexProgress) dom.pexProgress.value = pct;
+  updateProgressBarStyle(pct);
+  const szoveg = formatTime(t);
+  if (dom.timeCurrent.textContent !== szoveg) dom.timeCurrent.textContent = szoveg;
+  if (dom.pexTimeCurrent && dom.pexTimeCurrent.textContent !== szoveg) dom.pexTimeCurrent.textContent = szoveg;
+}
+
+function ugrasSzazalekra(pct) {
+  const d = dom.audio.duration;
+  if (!d || !isFinite(d)) return;
+  const t = Math.min(d, Math.max(0, d * pct / 100));
+  if (Math.abs(t - dom.audio.currentTime) > 0.25) dom.audio.currentTime = t;
+}
+
+function szazalekPontbol(el, clientX) {
+  const r = el.getBoundingClientRect();
+  if (!r.width) return parseFloat(el.value) || 0;
+  return Math.min(100, Math.max(0, (clientX - r.left) / r.width * 100));
+}
+
+function tekeroCsuszka(el) {
+  if (!el) return;
+  el.step = 'any';   // folyamatos pöcök (nem 0,1%-os lépésekben); billentyűvel 1%-ot lép
+  el.addEventListener('pointerdown', e => {
+    if (!dom.audio.duration || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    tekeres.aktiv = el;
+    el.classList.add('huzas');
+    try { el.setPointerCapture(e.pointerId); } catch {}
+    const pct = szazalekPontbol(el, e.clientX);
+    pozicioMegjelenites(pct);
+    buborek(el, pct, e.pointerType !== 'mouse');
+  });
+  el.addEventListener('pointermove', e => {
+    const pct = szazalekPontbol(el, e.clientX);
+    if (tekeres.aktiv === el) { pozicioMegjelenites(pct); buborek(el, pct, e.pointerType !== 'mouse'); }
+    else if (e.pointerType === 'mouse' && dom.audio.duration) buborek(el, pct, false);   // egérrel: hová ugrana
+  });
+  el.addEventListener('pointerleave', () => { if (tekeres.aktiv !== el) buborek(el, null); });
+  const vege = e => {
+    if (tekeres.aktiv !== el) return;
+    tekeres.aktiv = null;
+    el.classList.remove('huzas');
+    const pct = e.type === 'pointercancel' ? parseFloat(el.value) : szazalekPontbol(el, e.clientX);
+    pozicioMegjelenites(pct);
+    ugrasSzazalekra(pct);
+    if (e.pointerType !== 'mouse') { buborek(el, null); rezges(); }
+  };
+  el.addEventListener('pointerup', vege);
+  el.addEventListener('pointercancel', vege);
+  // Billentyűzet: az 'input' csak kijelez, a 'change' ugrik. Húzás közben a natív események nem számítanak.
+  el.addEventListener('input', () => { if (!tekeres.aktiv) pozicioMegjelenites(parseFloat(el.value)); });
+  el.addEventListener('change', () => { if (!tekeres.aktiv) ugrasSzazalekra(parseFloat(el.value)); });
+}
+
 function updateProgressBarStyle(pct) {
-  if (!dom.progressBar) return;
-  dom.progressBar.style.background =
-    `linear-gradient(to right, var(--gold) 0%, var(--gold) ${pct}%, rgba(255,255,255,0.18) ${pct}%, rgba(255,255,255,0.18) 100%)`;
+  // A kitöltés háttérképként, középre igazított vékony csíkként rajzolódik (a CSS adja a méretét),
+  // így a csúszka érinthető területe nagyobb lehet, mint a látható sáv.
+  // Három szakasz: lejátszott (arany) | már letöltött (halvány) | még nem letöltött.
+  const puf = Math.max(pct, pufferSzazalek());
+  const sav = (alap, toltott) =>
+    `linear-gradient(to right, var(--gold) 0%, var(--gold) ${pct}%, ${toltott} ${pct}%, ${toltott} ${puf}%, ${alap} ${puf}%, ${alap} 100%)`;
+  if (dom.progressBar) dom.progressBar.style.backgroundImage = sav('rgba(255,255,255,0.16)', 'rgba(255,255,255,0.34)');
+  if (dom.pexProgress) dom.pexProgress.style.backgroundImage = sav('rgba(255,255,255,0.18)', 'rgba(255,255,255,0.38)');
+}
+
+function pufferSzazalek() {
+  const a = dom.audio, d = a && a.duration;
+  if (!d || !isFinite(d) || !a.buffered) return 0;
+  try {
+    for (let i = 0; i < a.buffered.length; i++) {
+      if (a.buffered.start(i) <= a.currentTime + 0.5 && a.buffered.end(i) >= a.currentTime) return a.buffered.end(i) / d * 100;
+    }
+  } catch {}
+  return 0;
+}
+
+/* ---------- Egyenletes sáv: lejátszás közben képkockánként frissül (a timeupdate csak ~4×/mp) ---------- */
+let simaSavId = 0;
+function simaSav() {
+  simaSavId = 0;
+  if (!state.isPlaying || document.hidden) return;          // szünetben / háttérben nem fut (akkumulátor)
+  if (!tekeres.aktiv && !dom.audio.seeking && dom.audio.duration) {
+    pozicioMegjelenites(dom.audio.currentTime / dom.audio.duration * 100);
+  }
+  simaSavId = requestAnimationFrame(simaSav);
+}
+function simaSavIndit() { if (!simaSavId && state.isPlaying) simaSavId = requestAnimationFrame(simaSav); }
+
+/* ---------- Töltés-jelzés: forgó kör a play gombon, amíg a hang tölt / az ugrás tart ---------- */
+function toltesJelzes() {
+  const a = dom.audio;
+  const tolt = !!state.current && !!a.src && (a.seeking || (!a.paused && a.readyState < 3));
+  dom.playBtn.classList.toggle('tolt', tolt);
+  if (dom.pexPlay) dom.pexPlay.classList.toggle('tolt', tolt);
+}
+
+/* ---------- Időbuborék a csúszka fölött (húzáskor, egérrel rámutatva) ---------- */
+function buborek(el, pct, erintes) {
+  let b = el._buborek;
+  if (pct === null) { if (b) b.classList.remove('lathato'); return; }
+  if (!b) {
+    b = document.createElement('span');
+    b.className = 'ido-buborek';
+    b.setAttribute('aria-hidden', 'true');
+    el.parentNode.appendChild(b);
+    el._buborek = b;
+  }
+  b.textContent = formatTime((dom.audio.duration || 0) * pct / 100);
+  b.classList.toggle('erintes', !!erintes);
+  b.style.left = (el.offsetLeft + el.offsetWidth * pct / 100) + 'px';
+  b.classList.add('lathato');
+}
+
+/* ---------- Finom rezgés érintéskor (csak Androidon működik; máshol nem csinál semmit) ---------- */
+function rezges(ms = 8) {
+  try {
+    if (navigator.vibrate && window.matchMedia && matchMedia('(pointer: coarse)').matches) navigator.vibrate(ms);
+  } catch {}
+}
+
+/* ---------- Lezárt képernyő / értesítés / fülhallgató-gombok (Media Session) ---------- */
+function mediaSessionBeallit() {
+  if (!('mediaSession' in navigator)) return;
+  const ms = navigator.mediaSession;
+  const h = (akcio, fn) => { try { ms.setActionHandler(akcio, fn); } catch {} };
+  h('play',  () => { dom.audio.play().catch(() => {}); });
+  h('pause', () => dom.audio.pause());
+  h('stop',  () => stopPlayer());
+  h('seekbackward', d => { dom.audio.currentTime = Math.max(0, dom.audio.currentTime - ((d && d.seekOffset) || CONFIG.SKIP_SECONDS)); });
+  h('seekforward',  d => { if (dom.audio.duration) dom.audio.currentTime = Math.min(dom.audio.duration, dom.audio.currentTime + ((d && d.seekOffset) || CONFIG.SKIP_SECONDS)); });
+  h('seekto', d => {
+    if (!d || typeof d.seekTime !== 'number') return;
+    if (d.fastSeek && 'fastSeek' in dom.audio) dom.audio.fastSeek(d.seekTime); else dom.audio.currentTime = d.seekTime;
+  });
+}
+function mediaSessionMetaadat() {
+  if (!('mediaSession' in navigator) || !state.current) return;
+  const l = state.current, ms = navigator.mediaSession;
+  try {
+    ms.metadata = new MediaMetadata({
+      title:  l.cim || l.eloado || 'Felvétel',
+      artist: l.eloado || 'Kelenföldi Református Egyházközség',
+      album:  [l.kategoria, l.datum ? formatDate(l.datum) : ''].filter(Boolean).join(' · ') || 'Digitális Hangarchívum',
+      artwork: [
+        { src: new URL('icon-192.png', location.href).href, sizes: '192x192', type: 'image/png' },
+        { src: new URL('icon-512.png', location.href).href, sizes: '512x512', type: 'image/png' },
+      ],
+    });
+  } catch {}
+  // Sorozatnál előző / következő rész gomb (ha nincs ilyen rész, a gomb eltűnik)
+  const elozo = sorozatSzomszed(l, -1), kov = sorozatSzomszed(l, 1);
+  try { ms.setActionHandler('previoustrack', elozo ? () => startPlaying(elozo) : null); } catch {}
+  try { ms.setActionHandler('nexttrack',     kov   ? () => startPlaying(kov)   : null); } catch {}
+}
+function mediaSessionAllapot() {
+  if (!('mediaSession' in navigator)) return;
+  try { navigator.mediaSession.playbackState = dom.audio.paused ? 'paused' : 'playing'; } catch {}
+}
+function mediaSessionPozicio() {
+  if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
+  const a = dom.audio;
+  if (!a.duration || !isFinite(a.duration)) return;
+  try { navigator.mediaSession.setPositionState({ duration: a.duration, playbackRate: a.playbackRate || 1, position: Math.min(a.currentTime, a.duration) }); } catch {}
+}
+
+/* ---------- Sorozatok: „Evangelizációs hét IV.” → „V.”, „Bibliaiskola …, 4. rész” → „5. rész” ----------
+   Ugyanaz a cím-alap, eggyel nagyobb sorszám, legfeljebb 62 nappal később (így a különböző évek
+   azonos nevű sorozatai nem keverednek). Az előadó lehet más (pl. evangelizációs hét több igehirdetővel). */
+const ROMAI_SZAM = { I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8, IX: 9, X: 10, XI: 11, XII: 12, XIII: 13, XIV: 14, XV: 15 };
+let sorozatIndex = null;
+function sorozatBont(cim) {
+  cim = (cim || '').trim();
+  let m = cim.match(/^(.*?)[\s,]+([IVX]{1,4})\.?$/);
+  if (m && ROMAI_SZAM[m[2]]) return { alap: m[1].replace(/[\s,–-]+$/, '').toLowerCase(), n: ROMAI_SZAM[m[2]] };
+  m = cim.match(/^(.*?),?\s+(\d{1,2})\.\s*rész(?![a-záéíóöőúüű])/i);
+  if (m) return { alap: m[1].replace(/[\s,–-]+$/, '').toLowerCase(), n: +m[2] };
+  return null;
+}
+function sorozatSzomszed(l, irany) {
+  if (!l) return null;
+  const b = sorozatBont(l.cim);
+  if (!b) return null;
+  if (!sorozatIndex) {
+    sorozatIndex = new Map();
+    for (const x of state.lectures) {
+      const bx = sorozatBont(x.cim);
+      if (!bx) continue;
+      if (!sorozatIndex.has(bx.alap)) sorozatIndex.set(bx.alap, []);
+      sorozatIndex.get(bx.alap).push([bx.n, x]);
+    }
+  }
+  const d0 = l.datum ? Date.parse(l.datum) : NaN;
+  let legjobb = null;
+  for (const [n, x] of sorozatIndex.get(b.alap) || []) {
+    if (n !== b.n + irany || x === l) continue;
+    const d = x.datum ? Date.parse(x.datum) : NaN;
+    let tav;
+    if (!isNaN(d0) && !isNaN(d)) {
+      tav = Math.round((d - d0) / 86400000) * irany;
+      if (tav < 0 || tav > 62) continue;
+    } else if (isNaN(d0) && isNaN(d) && x.eloado === l.eloado) {
+      tav = 0;
+    } else continue;
+    if (!legjobb || tav < legjobb.tav || (tav === legjobb.tav && (x.ido || '') < (legjobb.x.ido || ''))) legjobb = { tav, x };
+  }
+  return legjobb ? legjobb.x : null;
+}
+function pexSorozatFrissit() {
+  const sor = dom.pexSorozat;
+  if (!sor) return;
+  const elozo = sorozatSzomszed(state.current, -1), kov = sorozatSzomszed(state.current, 1);
+  sor.hidden = !elozo && !kov;
+  sor.innerHTML =
+    (elozo ? `<button type="button" class="pex-sorozat-btn" data-irany="-1" title="${escHtml(elozo.cim)}">‹ Előző rész</button>` : '') +
+    (kov   ? `<button type="button" class="pex-sorozat-btn" data-irany="1" title="${escHtml(kov.cim)}">Következő rész ›</button>` : '');
+}
+
+/* A felvétel végén, ha van következő rész: 8 mp-es visszaszámlálás, „Lejátszás” / „Mégse” */
+let kovetkezoIdozito = null;
+function kovetkezoElrejt() {
+  if (kovetkezoIdozito) { clearInterval(kovetkezoIdozito); kovetkezoIdozito = null; }
+  const t = document.getElementById('kovetkezoErtesito');
+  if (t) t.hidden = true;
+}
+function sorozatVegen() {
+  const kov = sorozatSzomszed(state.current, 1);
+  if (!kov) return;
+  let t = document.getElementById('kovetkezoErtesito');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'kovetkezoErtesito'; t.className = 'kovetkezo';
+    t.setAttribute('role', 'status');
+    document.body.appendChild(t);
+  }
+  let mp = 8;
+  t.innerHTML =
+    '<div class="kovetkezo-szoveg"><span class="kovetkezo-cimke">Következő rész</span>' +
+    `<strong>${escHtml(kov.cim)}</strong>` + (kov.eloado ? `<span class="kovetkezo-eloado">${escHtml(kov.eloado)}</span>` : '') + '</div>' +
+    `<div class="kovetkezo-gombok"><button type="button" class="kovetkezo-most">Lejátszás <span class="kovetkezo-mp">${mp}</span></button>` +
+    '<button type="button" class="kovetkezo-megse">Mégse</button></div>';
+  t.hidden = false;
+  t.querySelector('.kovetkezo-most').addEventListener('click', () => { kovetkezoElrejt(); startPlaying(kov); });
+  t.querySelector('.kovetkezo-megse').addEventListener('click', kovetkezoElrejt);
+  if (kovetkezoIdozito) clearInterval(kovetkezoIdozito);
+  kovetkezoIdozito = setInterval(() => {
+    mp--;
+    const s = t.querySelector('.kovetkezo-mp');
+    if (s) s.textContent = mp;
+    if (mp <= 0) { kovetkezoElrejt(); startPlaying(kov); }
+  }, 1000);
+}
+
+/* ---------- Nagy nézet: kategória-színű háttér ---------- */
+const KAT_SZIN = {
+  istentisztelet: '#90B0E0', bibliakor: '#50C0B8', evangelizacio: '#70C0A0', kulonleges: '#E0B840',
+  unnepi: '#E8C870', imaheti: '#D49060', diakonia: '#8EC0EE', reformacio: '#F0A0A0', bunbanati: '#C2CAD6',
+  tortenelmi: '#E0B088', zenei: '#B4AAF0', konfirmacio: '#B888E8', alap: '#C9A44A',
+};
+function pexSzinezes(l) {
+  if (!dom.pex) return;
+  const kulcs = kategoriaCls(l.kategoria).replace('kat-', '');
+  const hex = KAT_SZIN[kulcs] || KAT_SZIN.alap;
+  const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+  dom.pex.style.setProperty('--pex-tint', hex);
+  dom.pex.style.setProperty('--pex-tint-halvany', `rgba(${r},${g},${b},0.30)`);
+  dom.pex.style.setProperty('--pex-tint-gyuru', `rgba(${r},${g},${b},0.28)`);
+}
+
+/* ---------- Nagy nézet lehúzása: az ujjal együtt mozog, elengedéskor zár vagy visszapattan ---------- */
+function pexHuzas() {
+  const el = dom.pex;
+  if (!el) return;
+  let y0 = null, x0 = 0, t0 = 0, dy = 0, irany = null, aktiv = false;
+  el.addEventListener('touchstart', e => {
+    y0 = null;
+    if (e.target.closest && e.target.closest('input[type="range"], select')) return;
+    if (el.scrollTop > 2) return;                     // ha a tartalom görgetve van, előbb az görögjön
+    y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; t0 = performance.now();
+    dy = 0; irany = null; aktiv = false;
+  }, { passive: true });
+  el.addEventListener('touchmove', e => {
+    if (y0 === null) return;
+    const ddy = e.touches[0].clientY - y0, ddx = e.touches[0].clientX - x0;
+    if (!irany) {
+      if (Math.abs(ddy) < 6 && Math.abs(ddx) < 6) return;
+      irany = Math.abs(ddy) > Math.abs(ddx) ? 'fuggoleges' : 'vizszintes';
+    }
+    if (irany !== 'fuggoleges') return;
+    dy = Math.max(0, ddy);
+    aktiv = dy > 0;
+    el.style.transition = 'none';
+    el.style.transform = `translateY(${dy}px)`;
+  }, { passive: true });
+  const vege = () => {
+    if (y0 === null) return;
+    const sebesseg = dy / Math.max(1, performance.now() - t0);    // px/ms
+    el.style.transition = '';
+    el.style.transform = '';
+    if (aktiv && (dy > 140 || (dy > 40 && sebesseg > 0.6))) closePex();   // különben visszapattan
+    y0 = null; aktiv = false; dy = 0;
+  };
+  el.addEventListener('touchend', vege, { passive: true });
+  el.addEventListener('touchcancel', vege, { passive: true });
 }
 
 async function downloadLecture(lecture, btn) {

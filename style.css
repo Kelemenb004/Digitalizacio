@@ -804,42 +804,51 @@ html:not([data-theme="dark"]) .icon-moon { display: block; }
   -webkit-appearance: none;
   appearance: none;
   flex: 1;
-  height: 5px;
-  background: rgba(255,255,255,0.18);
+  /* Látható sáv 5 px, de az érinthető terület 26 px (a negatív margó miatt a sor nem lesz magasabb) */
+  height: 26px;
+  margin: -10.5px 0;
+  background-color: transparent;
+  background-image: linear-gradient(rgba(255,255,255,0.18), rgba(255,255,255,0.18));
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 5px;
   border-radius: 3px;
   cursor: pointer;
   border: none;
   padding: 0;
   outline: none;
   min-width: 0;
+  touch-action: none;      /* húzás közben ne görgessen / ne induljon más gesztus */
 }
 
 .progress-bar::-webkit-slider-runnable-track {
-  height: 5px;
-  border-radius: 3px;
+  height: 26px;
+  background: transparent;
 }
 
 .progress-bar::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
+  margin-top: 6px;          /* (26 − 14) / 2 – függőlegesen a sáv közepén */
   background: var(--gold);
   border-radius: 50%;
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.15s;
+  transition: opacity 0.15s, transform 0.15s;
 }
-.progress-bar:hover::-webkit-slider-thumb { opacity: 1; }
+.progress-bar:hover::-webkit-slider-thumb,
+.progress-bar:focus-visible::-webkit-slider-thumb,
+.progress-bar.huzas::-webkit-slider-thumb { opacity: 1; }
+.progress-bar.huzas::-webkit-slider-thumb { transform: scale(1.25); }
 
 .progress-bar::-moz-range-track {
   height: 5px;
-  background: rgba(255,255,255,0.18);
-  border-radius: 3px;
+  background: transparent;
 }
 
 .progress-bar::-moz-range-progress {
-  background: var(--gold);
-  border-radius: 3px;
+  background: transparent;
   height: 5px;
 }
 
@@ -853,7 +862,14 @@ html:not([data-theme="dark"]) .icon-moon { display: block; }
   opacity: 0;
   transition: opacity 0.15s;
 }
-.progress-bar:hover::-moz-range-thumb { opacity: 1; }
+.progress-bar:hover::-moz-range-thumb,
+.progress-bar:focus-visible::-moz-range-thumb,
+.progress-bar.huzas::-moz-range-thumb { opacity: 1; }
+/* Érintőképernyőn nincs „fölé húzás” → a pöcök mindig látszik */
+@media (hover: none) {
+  .progress-bar::-webkit-slider-thumb { opacity: 1; }
+  .progress-bar::-moz-range-thumb { opacity: 1; }
+}
 
 .player-volume {
   display: flex;
@@ -1667,7 +1683,9 @@ input[type="range"]#volumeSlider:focus {
   left: 0; right: 0; bottom: 0;
   height: 100dvh;               /* teljes képernyő (dvh: mobil címsor-barát) */
   z-index: 300;                 /* a mini-sáv (200) fölött */
-  background: linear-gradient(180deg, var(--navy) 0%, var(--navy-dark) 100%);
+  background:
+    radial-gradient(120% 55% at 50% 0%, var(--pex-tint-halvany, rgba(201,164,74,0.14)) 0%, transparent 70%),
+    linear-gradient(180deg, var(--navy) 0%, var(--navy-dark) 100%);
   transform: translateY(100%);  /* alapból lent, kívül a képernyőn */
   transition: transform 0.34s cubic-bezier(0.22, 0.61, 0.36, 1);
   overflow-y: auto;
@@ -1723,8 +1741,12 @@ input[type="range"]#volumeSlider:focus {
   background: #fff;
   padding: 7px;                  /* a körirat befér */
   object-fit: contain;           /* a pecsét nem vágódik */
-  box-shadow: 0 10px 32px rgba(0,0,0,0.38), 0 0 0 5px rgba(201,164,74,0.15);
+  box-shadow: 0 10px 32px rgba(0,0,0,0.38), 0 0 0 5px var(--pex-tint-gyuru, rgba(201,164,74,0.15)),
+              0 0 60px var(--pex-tint-halvany, transparent);
+  transform: scale(0.92);
+  transition: transform 0.55s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.4s ease;
 }
+.player-expanded.szol .pex-cover-img { transform: scale(1); }
 
 /* Cím + meta */
 .pex-meta { text-align: center; }
@@ -1734,13 +1756,13 @@ input[type="range"]#volumeSlider:focus {
   font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--navy-dark);
-  background: var(--gold-light);
+  background: var(--pex-tint, var(--gold-light));
   padding: 0.2rem 0.7rem; border-radius: 999px;
   margin-bottom: 0.6rem;
 }
 .pex-title {
   font-family: var(--font-serif);
-  font-size: 1.35rem; line-height: 1.25; font-weight: 700;
+  font-size: clamp(1.35rem, 4.6vw, 1.7rem); line-height: 1.25; font-weight: 700;
   color: var(--text-invert);
   margin: 0 0 0.35rem;
 }
@@ -1775,14 +1797,24 @@ input[type="range"]#volumeSlider:focus {
   color: rgba(255,255,255,0.7); min-width: 3ch; text-align: center;
 }
 .pex-progress {
-  flex: 1; height: 6px; cursor: pointer;
+  flex: 1; height: 30px; cursor: pointer;      /* látható sáv 6 px, érinthető terület 30 px */
   -webkit-appearance: none; appearance: none;
-  background: rgba(255,255,255,0.2); border-radius: 999px;
+  background-color: transparent;
+  background-image: linear-gradient(rgba(255,255,255,0.22), rgba(255,255,255,0.22));
+  background-repeat: no-repeat; background-position: center; background-size: 100% 6px;
+  border-radius: 999px;
+  border: none; padding: 0;                       /* az általános input-keret ne rajzolódjon ki */
+  touch-action: none;
 }
+.pex-progress::-webkit-slider-runnable-track { height: 30px; background: transparent; }
+.pex-progress::-moz-range-track { background: transparent; }
 .pex-progress::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+  -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+  margin-top: 6px;                               /* (30 − 18) / 2 */
   background: var(--gold); cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  transition: transform 0.15s;
 }
+.pex-progress.huzas::-webkit-slider-thumb { transform: scale(1.2); }
 .pex-progress::-moz-range-thumb {
   width: 16px; height: 16px; border: none; border-radius: 50%;
   background: var(--gold); cursor: pointer;
@@ -2108,4 +2140,107 @@ button.panel-nav-link {
   .header-inner--fo .header-search  { order: 5; flex: 1 1 100%; max-width: none; margin-left: 0; }
   .header-inner--fo .header-search input[type="search"],
   .header-inner--fo .search-btn     { min-height: 40px; }
+}
+
+/* Lejátszási csúszkák: egér/érintés után ne legyen fókusz-keret (az általános input:focus
+   stílus a megnövelt érinthető területre rajzolna); billentyűzetnél látható maradjon. */
+.progress-bar:focus,
+.pex-progress:focus { box-shadow: none; border-color: transparent; outline: none; }
+.progress-bar:focus-visible,
+.pex-progress:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+/* =====================================================================
+   Lejátszó-finomítások: töltés-jelzés, időbuborék, sorozat, következő rész
+   ===================================================================== */
+.play-btn, .pex-play { position: relative; }
+.play-btn.tolt::after,
+.pex-play.tolt::after {
+  content: ""; position: absolute; inset: -5px; border-radius: 50%;
+  border: 2.5px solid rgba(224, 188, 114, 0.22); border-top-color: var(--gold-light);
+  animation: lejatszo-forog 0.8s linear infinite;
+  pointer-events: none;
+}
+.pex-play.tolt::after { inset: -7px; border-width: 3px; }
+@keyframes lejatszo-forog { to { transform: rotate(360deg); } }
+
+/* Időbuborék a csúszka fölött */
+.player-timeline, .pex-timeline { position: relative; }
+.ido-buborek {
+  position: absolute; bottom: calc(100% + 4px); left: 0;
+  transform: translateX(-50%);
+  padding: 0.2rem 0.5rem; border-radius: 6px;
+  background: var(--gold); color: var(--navy-dark);
+  font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; font-variant-numeric: tabular-nums;
+  white-space: nowrap; pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  opacity: 0; transition: opacity 0.12s ease;
+  z-index: 5;
+}
+.ido-buborek::after {
+  content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: var(--gold);
+}
+.ido-buborek.lathato { opacity: 1; }
+.ido-buborek.erintes { bottom: calc(100% + 20px); font-size: 0.9rem; padding: 0.3rem 0.65rem; }   /* az ujj fölött */
+.pex-timeline .ido-buborek { bottom: calc(100% - 2px); }
+.pex-timeline .ido-buborek.erintes { bottom: calc(100% + 14px); }
+
+/* Sorozat: előző / következő rész a nagy nézetben */
+.pex-sorozat { display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; }
+.pex-sorozat[hidden] { display: none; }
+.pex-sorozat-btn {
+  background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 999px;
+  padding: 0.5rem 1rem; min-height: 40px;
+  font-family: var(--font-ui); font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+.pex-sorozat-btn:hover, .pex-sorozat-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.15); border-color: var(--pex-tint, var(--gold)); color: #fff;
+}
+
+/* „Következő rész” ajánló a felvétel végén */
+.kovetkezo {
+  position: fixed; left: 50%; bottom: calc(var(--player-h) + 14px);
+  transform: translateX(-50%);
+  z-index: 350;
+  width: min(560px, calc(100vw - 24px));
+  display: flex; align-items: center; gap: 0.75rem 1rem; flex-wrap: wrap;
+  padding: 0.85rem 1rem;
+  background: var(--navy-dark); color: #fff;
+  border: 1px solid var(--gold-border); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  animation: kovetkezo-be 0.25s ease-out;
+}
+.kovetkezo[hidden] { display: none; }
+body.pex-open .kovetkezo { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+.kovetkezo-szoveg { flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+.kovetkezo-cimke {
+  font-family: var(--font-ui); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--gold-light);
+}
+.kovetkezo-szoveg strong {
+  font-family: var(--font-serif); font-size: 1.02rem; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.kovetkezo-eloado { font-family: var(--font-ui); font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); }
+.kovetkezo-gombok { display: flex; gap: 0.5rem; }
+.kovetkezo-most, .kovetkezo-megse {
+  min-height: 40px; padding: 0.5rem 0.95rem; border-radius: var(--radius);
+  font-family: var(--font-ui); font-size: 0.9rem; font-weight: 600; cursor: pointer;
+}
+.kovetkezo-most { background: var(--gold); color: var(--navy-dark); border: 0; }
+.kovetkezo-most:hover { background: var(--gold-light); }
+.kovetkezo-mp {
+  display: inline-block; min-width: 1.4em; margin-left: 0.2rem; padding: 0 0.3rem;
+  border-radius: 999px; background: rgba(15, 29, 58, 0.15); font-variant-numeric: tabular-nums;
+}
+.kovetkezo-megse { background: transparent; color: rgba(255, 255, 255, 0.85); border: 1px solid rgba(255, 255, 255, 0.25); }
+.kovetkezo-megse:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+@keyframes kovetkezo-be { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .play-btn.tolt::after, .pex-play.tolt::after { animation-duration: 2.4s; }
+  .pex-cover-img { transition: none; transform: none !important; }
+  .kovetkezo { animation: none; }
 }

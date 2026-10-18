@@ -50,6 +50,24 @@
   nem érinti, semmit nem gyorsítótáraz a tartalomból). iOS: `apple-mobile-web-app-title`
   = „Hangarchívum”. A manifest egyelőre csak a főoldalon van belinkelve. A gomb fő helye
   a fejléc alatti sáv (`#installSav`, nem ragadós – görgetéskor nem foglal helyet).
+- **Tekerés (2026-10-18):** a két pozíció-csúszka (`#progressBar`, `#pexProgress`) közös
+  vezérlője az `app.js` `tekeroCsuszka()` függvénye: pointer-eseményekkel húzás közben
+  csak kijelez (a `timeupdate` ilyenkor és `audio.seeking` alatt nem írja felül), az
+  ugrás elengedéskor egyszer történik; koppintásra is ugrik (iOS-en is). Érinthető
+  terület 26/30 px, a látható csík háttérképként rajzolódik; `touch-action: none`;
+  a lejátszó fel/le húzó gesztusa csúszkán indított érintésre nem reagál.
+- **Lejátszó-finomítások (2026-10-18, `app.js`):** egyenletes sáv (`requestAnimationFrame`,
+  csak lejátszás alatt és látható lapon); a betöltött rész halvány csíkkal (`pufferSzazalek`);
+  töltés-jelzés (`toltesJelzes` → `.tolt` forgó kör a play gombon); időbuborék húzáskor /
+  egérrel (`buborek`); finom rezgés Androidon (`rezges`); Media Session (lezárt képernyő,
+  értesítés, fülhallgató-gombok: play/pause, ±10 mp, tekerés, sorozatnál előző/következő);
+  nagy nézet: kategóriaszínű háttér (`pexSzinezes`, `--pex-tint`), lejátszáskor „kinyíló”
+  borító, ujjkövető lehúzás (`pexHuzas`: 140 px vagy gyors mozdulat → zár, különben visszapattan).
+- **Sorozatok:** `sorozatBont` / `sorozatSzomszed` – „… IV.” (római) vagy „…, 4. rész” forma,
+  azonos cím-alap, sorszám ±1, legfeljebb 62 nap eltérés (a különböző évek azonos nevű
+  sorozatai így nem keverednek; az előadó eltérhet). 407 sorozatrész, ebből 312-nek van
+  következő része. A nagy nézetben „‹ Előző rész / Következő rész ›”; a felvétel végén
+  8 mp-es ajánló („Lejátszás” / „Mégse”), utána magától indul a következő rész.
 
 ## Fejlesztői környezet
 - VS Code + Claude Code extension + Filesystem MCP.
