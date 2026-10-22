@@ -719,7 +719,7 @@ def main():
 
     # Megszunt eloado-oldalak (nevvaltozas / osszevonas) -> atiranyito oldal,
     # mert a regi URL-ek mar indexelve vannak. Idempotens.
-    ATIRANYITAS = {"pap-tibor": "papp-tibor", "takaro-tamas": "ifj-takaro-tamas"}
+    ATIRANYITAS = {"pap-tibor": "papp-tibor", "takaro-tamas": "ifj-takaro-tamas", "bruchner-szilard": "bruckner-laszlo"}
     elo_slugok = {sp["slug"] for sp in speakers}
     redir = 0
     for d in sorted(os.listdir("igehirdeto")):
