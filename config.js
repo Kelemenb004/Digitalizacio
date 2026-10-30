@@ -2,6 +2,9 @@ const CONFIG = {
   // Cloudflare R2 public bucket URL – cseréld ki a saját bucket URL-edre
   R2_BASE_URL: 'https://pub-07c808b19cf0458187fdb14c1d5d0129.r2.dev',
 
+  // Megtekintés-számláló (Cloudflare Worker: szamlalo/worker.js). Üresen a számláló nem jelenik meg.
+  SZAMLALO_URL: 'https://kelenref-szamlalo.kelemen-botond04.workers.dev',
+
   SITE_NAME: 'Digitális Hangarchívum',
   SITE_SUBTITLE: 'Digitalizált Igehirdetések gyűjteménye',
 

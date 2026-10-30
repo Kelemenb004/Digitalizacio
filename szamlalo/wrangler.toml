@@ -1,0 +1,9 @@
+# A számláló Worker beállítása (újratelepítéshez: a szamlalo/ mappában `npx wrangler deploy`)
+name = "kelenref-szamlalo"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "kelenref-szamlalo"
+database_id = "a834a7a4-73e1-4325-aeef-511ac31ba829"

@@ -2244,3 +2244,21 @@ body.pex-open .kovetkezo { bottom: calc(16px + env(safe-area-inset-bottom, 0px))
   .pex-cover-img { transition: none; transform: none !important; }
   .kovetkezo { animation: none; }
 }
+
+/* Megtekintés-számláló a ☰ menü legalján (szamlalo.js) */
+.panel-szamlalo {
+  display: flex; align-items: center; justify-content: center; gap: 0.45rem;
+  padding: 0.6rem 0 0.1rem;
+  font-family: var(--font-ui); font-size: 0.9rem; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+.panel-szamlalo[hidden] { display: none; }
+.panel-szamlalo svg { color: var(--gold); flex-shrink: 0; }
+.panel-szamlalo-cimke { font-weight: 400; }
+
+/* Sötét mód: a ☰ menü link-gombjainak (Igehirdetők, Videók) felirata ne vegye át az általános
+   arany link-színt – különben arany szöveg lenne az arany gombon (láthatatlan). */
+[data-theme="dark"] a.panel-nav-link,
+[data-theme="dark"] a.panel-nav-link:hover,
+[data-theme="dark"] a.panel-nav-link:focus { color: var(--navy); }

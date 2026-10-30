@@ -11,3 +11,4 @@ exclude:
   - "*.bak_*"
   - __pycache__/
   - takaritas.sh
+  - szamlalo/

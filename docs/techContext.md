@@ -68,6 +68,12 @@
   sorozatai így nem keverednek; az előadó eltérhet). 407 sorozatrész, ebből 312-nek van
   következő része. A nagy nézetben „‹ Előző rész / Következő rész ›”; a felvétel végén
   8 mp-es ajánló („Lejátszás” / „Mégse”), utána magától indul a következő rész.
+- **Megtekintés-számláló (2026-10-30):** a ☰ menü alján szem ikon + szám (`szamlalo.js`).
+  Háttér: Cloudflare Worker `kelenref-szamlalo` (`https://kelenref-szamlalo.kelemen-botond04.workers.dev`)
+  + D1 adatbázis `kelenref-szamlalo` (táblák: `szamlalo`, `napi`); forrás és leírás: `szamlalo/`
+  (a Jekyll kizárja). Az élő oldal minden főoldal-megnyitásnál `POST /hit`; más origin → 403.
+  Kezdőérték 156 (Search Console összes kattintás, 2026-10-30). A cím a `config.js`
+  `SZAMLALO_URL`-jében és az index CSP `connect-src`-jében. Személyes adatot nem tárol.
 
 ## Fejlesztői környezet
 - VS Code + Claude Code extension + Filesystem MCP.
