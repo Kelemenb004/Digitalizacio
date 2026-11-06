@@ -371,7 +371,7 @@
     ablak.addEventListener('pointercancel', huzVege);
     ablak.addEventListener('click', e => { if (kattTiltas) { e.preventDefault(); e.stopPropagation(); } }, true);
 
-    // Automatikus lapozás: 7 mp-enként a következő videó (a végén újra az első).
+    // Automatikus lapozás: 5 mp-enként a következő videó (a végén újra az első).
     // Szünetel: ha az egér a sávon van, ha szól/nyitva van egy videó, ha a sáv nem látszik
     // (keresés, elgörgetve, másik böngészőlap), és kézi lapozás/érintés után 15 mp-ig.
     // A „csökkentett mozgás” rendszerbeállításnál nincs automatikus lapozás.

@@ -47,7 +47,7 @@ Az audio nem a repóban van, hanem Cloudflare R2-n.
   (a gépen futtatni). Megjelenítés: `videok.js`
   (közös) — a `/videok/` oldal listája, és a `kiemelt: true` tételek a főoldalon is,
   a nyitókép alatti lapozós, végtelenített sávban (`#filmekSection` / `#filmekKarusszel`,
-  `korhinta()`; sorrend = a `videok.json` sorrendje; 7 mp-enként magától lapoz – egér a sávon, szóló videó, kézi lapozás után 15 mp szünetel; keresés/szűrés közben rejtve). Kattintásig nem
+  `korhinta()`; sorrend = a `videok.json` sorrendje; 5 mp-enként magától lapoz – egér a sávon, szóló videó, kézi lapozás után 15 mp szünetel; keresés/szűrés közben rejtve). Kattintásig nem
   tölt semmit; egyszerre egy videó szól, a hanglejátszóval kölcsönösen
   megállítják egymást. A saját videóknál nincs letöltés gomb és jobb klikkes
   mentés (`controlslist="nodownload"`) — szándékosan NEM úgy, mint a hanganyagok.
