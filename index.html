@@ -155,15 +155,28 @@
     </div>
   </section>
 
-  <!-- ===== Ünnepi filmsáv – a videok.json "kiemelt": true tételei (videok.js) ===== -->
+  <!-- ===== Kiemelt videók – lapozós sáv; a videok.json "kiemelt": true tételei, a fájlbeli sorrendben (videok.js) ===== -->
   <section class="filmek-section hidden" id="filmekSection" aria-labelledby="filmekTitle">
     <div class="filmek-inner">
       <div class="filmek-head">
-        <p class="filmek-eyebrow">Történelmi filmfelvételek</p>
-        <h2 class="filmek-title" id="filmekTitle">Sebestyén Andor szolgálatának idejéből</h2>
-        <p class="filmek-lead">Digitalizált filmfelvételek a gyülekezet életéből · 1926–1954</p>
+        <p class="filmek-eyebrow">Kiemelt videók</p>
+        <h2 class="filmek-title" id="filmekTitle">100 éve Krisztussal</h2>
+        <p class="filmek-lead">Felvételek a gyülekezet száz évéből · <span class="nem-tor">1926–2026</span></p>
       </div>
-      <div class="filmek-grid" id="filmekGrid"></div>
+      <div class="karusszel" id="filmekKarusszel" aria-roledescription="körhinta" aria-label="Kiemelt videók">
+        <div class="karusszel-ablak">
+          <div class="karusszel-sav" id="filmekGrid"></div>
+        </div>
+        <div class="karusszel-also">
+          <button class="karusszel-nyil karusszel-nyil--bal" type="button" aria-label="Előző videó">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div class="karusszel-pontok"></div>
+          <button class="karusszel-nyil karusszel-nyil--jobb" type="button" aria-label="Következő videó">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
       <a class="filmek-more" href="/videok/">Az összes videófelvétel →</a>
     </div>
   </section>

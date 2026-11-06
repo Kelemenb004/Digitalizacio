@@ -42,9 +42,12 @@ Az audio nem a repóban van, hanem Cloudflare R2-n.
 - Videók: `videok.json`, kétféle tétel: YouTube (`id`) vagy saját videó az
   R2-ről (`tipus: "video"`, `src: "filmek/…mp4"`). Közös mezők: `cim, alkalom,
   datum, eloado, megjegyzes`, opcionális `hossz_sec`, `kiemelt: true`,
-  `keparany`, `poszter`. Megjelenítés: `videok.js` (közös) — a `/videok/` oldal
-  listája, és a `kiemelt: true` tételek a főoldalon is, a nyitókép alatti ünnepi
-  filmsávban (`#filmekSection`; keresés/szűrés közben rejtve). Kattintásig nem
+  `keparany`, `poszter`, `szovegkonyv` (`/szovegkonyv/<név>/` lapozó vagy `/dokumentumok/*.pdf`).
+  Lapozható szövegkönyv: `lapozo.js` + `lapozo.css`, oldalképek: `_forrasok/szovegkonyv_oldalak.py`
+  (a gépen futtatni). Megjelenítés: `videok.js`
+  (közös) — a `/videok/` oldal listája, és a `kiemelt: true` tételek a főoldalon is,
+  a nyitókép alatti lapozós, végtelenített sávban (`#filmekSection` / `#filmekKarusszel`,
+  `korhinta()`; sorrend = a `videok.json` sorrendje; 7 mp-enként magától lapoz – egér a sávon, szóló videó, kézi lapozás után 15 mp szünetel; keresés/szűrés közben rejtve). Kattintásig nem
   tölt semmit; egyszerre egy videó szól, a hanglejátszóval kölcsönösen
   megállítják egymást. A saját videóknál nincs letöltés gomb és jobb klikkes
   mentés (`controlslist="nodownload"`) — szándékosan NEM úgy, mint a hanganyagok.

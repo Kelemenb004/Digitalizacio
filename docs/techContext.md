@@ -33,7 +33,20 @@
   saját videó az R2-ről (`tipus: "video"`, `src: "filmek/…mp4"`, `<video>` elem
   `controlslist="nodownload"`-dal, jobb klikk tiltva; az R2-cím a `config.js`-ből,
   ezért a Videók oldal is betölti a `config.js`-t). Opcionális mezők: `kiemelt`,
-  `hossz_sec`, `keparany` (pl. `"4:3"`), `poszter` (`/images/...`).
+  `hossz_sec`, `keparany` (pl. `"4:3"`), `poszter` (`/images/...`),
+  `szovegkonyv` (a lapozható olvasó, pl. `/szovegkonyv/chronica-hominis/` → „Szövegkönyv”
+  gomb, ugyanazon a lapon; vagy egy `/dokumentumok/*.pdf` → „Szövegkönyv (PDF)”, új lapon).
+  2026-11-06: első kiemelt tétel a jubileumi színdarab, „Chronica hominis – Történetek
+  Ember Ádámról” (Friderikusz Nándor; YouTube `88kX0Mclpp8`; bemutató 2026-10-16),
+  saját borító: `images/chronica-hominis.webp` (a plakátból, `_forrasok/chronica_borito_javitas.py`:
+  enyhe zajszűrés + élesítés, 1600×900; forrás: `_forrasok/chronica-hominis-borito-eredeti.jpg`).
+  Hivatalos szövegkönyve: `dokumentumok/chronica-hominis-szovegkonyv.pdf` (74 oldal, A4).
+  Főoldali sáv = lapozós, végtelenített körhinta (`korhinta()` a `videok.js`-ben,
+  `#filmekKarusszel`): egyszerre egy videó középen, asztalon a szomszédok halványan
+  (felirat nélkül) bekandikálnak; nyilak, pontok, húzás (ujj/egér), ←/→; két szélén
+  2-2 klón dia, az átmenet után átmenet nélkül visszaugrik a valódira
+  (`.karusszel--azonnal`). Diaváltáskor a lejátszott videó megáll. A sorrend a
+  `videok.json` sorrendje (a legfrissebb legyen elöl). Egy kiemelt tételnél nincs lapozó.
   2026-10: a két Sebestyén Andor-kori (1926–1954) némafilm, az eredeti fájl
   változatlanul az R2 `filmek/` mappájában (forrás: Illés Barna digitalizálása;
   a 02-es, német film nem került fel). Teljes letöltés-védelem a weben nincs —
@@ -41,6 +54,23 @@
   CSP: a főoldalon és a Videók oldalon `frame-src https://www.youtube-nocookie.com`,
   `img-src https://i.ytimg.com`, a `media-src` az R2-t engedi. A közös
   lejátszó-stílusok (`.video-embed`, `.video-poster`, `.video-play`) a `style.css` végén.
+- **Lapozható szövegkönyv (2026-11-06):** `/szovegkonyv/chronica-hominis/` – saját oldal
+  (`lapozo.js` + `lapozo.css`, közös, más szövegkönyvhöz is jó: a `#konyv` data-attribútumai:
+  `data-oldalak`, `data-arany`, `data-kep`, `data-nagy`). Az oldalak előre elkészített képek
+  (`_forrasok/szovegkonyv_oldalak.py <pdf> <célmappa>`: pdftoppm 240 dpi → `oldalak/NNN.webp`
+  1100 px a lapozáshoz, `nagy/NNN.webp` 1800 px csak nagyításhoz; KÉPET A GÉPEN KELL GENERÁLNI).
+  Gépen/fekvő tableten kétoldalas könyv (a lap a gerinc körül 3D-ben átfordul, előtte/utána
+  árnyék, lapélek), telefonon egy oldal (a lap a bal szélén fordul el), fekvő telefonon az oldal
+  kitölti a szélességet és görgethető. Lapozás: húzás (a megfogott pont követi az ujjat,
+  pöccintés is), koppintás a szélekre, nyilak, ←/→/Home/End, csúszka; `#oldalszám` a címben.
+  Fekvő telefonon (magasság < 520 px) soha nem kétoldalas, hanem teljes szélesség + görgetés.
+  Nagyítás 100–300%: + / − gomb (lépcsők 125/150/200/250/300%, a képernyő közepe marad),
+  két ujjal (a böngésző saját nagyítása ki van kapcsolva – touch-action + iOS gesture* –,
+  így a fejléc és a lapozó sáv a helyén marad), Ctrl+görgő, dupla koppintás (150% / vissza).
+  Nagyítva a lap natívan görgethető; lapozni a nyilakkal, vagy a lap széléig görgetve még
+  egy húzással lehet. Androidon a vissza gomb a nagyítást állítja vissza. Csak transform/
+  opacity animál; a környező oldalak képe sorrendben előtöltődik (előbb a látható).
+  PDF letöltés gomb a fejlécben. Helyi próba: `_forrasok/helyi_szerver.bat` (localhost:8000).
 - **Telepíthető alkalmazás (PWA, 2026-10-18):** `manifest.json` (id/scope `/`,
   ikonok 192/512 + maskable), `telepites.js` (a `beforeinstallprompt` elkapása; a gomb
   ezzel hívja a böngésző telepítő ablakát, ha nincs ilyen – iPhone, Firefox, korai
